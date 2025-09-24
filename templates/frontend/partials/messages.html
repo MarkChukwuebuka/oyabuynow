@@ -1,0 +1,108 @@
+<style>
+    .message-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        max-width: 400px;
+    }
+
+    .message-toast {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+        min-width: 300px;
+    }
+
+    .message-toast.success {
+        background-color: #22c55e;
+    }
+
+    .message-toast.error {
+        background-color: #ef4444;
+    }
+
+    .message-toast.warning {
+        background-color: #f59e0b;
+    }
+
+    .message-toast.info {
+        background-color: #3b82f6;
+    }
+
+    .message-body {
+        flex: 1;
+        padding-right: 12px;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+    }
+
+    .close-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .close-button:focus {
+        outline: 2px solid rgba(255, 255, 255, 0.5);
+        outline-offset: 1px;
+    }
+
+</style>
+
+
+<!-- Message Popup Container -->
+<div class="message-container">
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            x-show="show"
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 5000)"
+            x-transition:enter="transform ease-out duration-300"
+            x-transition:enter-start="-translate-x-full opacity-0"
+            x-transition:enter-end="translate-x-0 opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="message-toast"
+            :class="{
+                'success': '{{ message.tags }}' === 'success',
+                'error': '{{ message.tags }}' === 'error',
+                'warning': '{{ message.tags }}' === 'warning',
+                'info': '{{ message.tags }}' === '' || '{{ message.tags }}' === 'info'
+            }"
+            role="alert"
+        >
+            <div class="message-body" >{{ message }}</div>
+            <button
+                type="button"
+                class="close-button"
+                @click="show = false"
+                aria-label="Close"
+                title="Close"
+            >×</button>
+        </div>
+        {% endfor %}
+        {% endif %}
+</div>

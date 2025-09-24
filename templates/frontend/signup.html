@@ -1,0 +1,243 @@
+
+{% extends "./partials/base.html" %}
+{% load static %}
+
+{% block content %}
+    <!-- log in section start -->
+    <section class="log-in-section section-b-space">
+        <div class="container-fluid-lg w-100">
+            <div class="row">
+                <div class="col-xxl-6 col-xl-5 col-lg-6 d-lg-block d-none ms-auto">
+                    <div class="image-contain">
+                        <img src="{% static 'frontend/assets/images/inner-page/sign-up.png' %}" class="img-fluid" alt="">
+                    </div>
+                </div>
+
+                <div class="col-xxl-4 col-xl-5 col-lg-6 col-sm-8 mx-auto">
+                    <div class="log-in-box" x-data="formValidation()">
+                        <div class="log-in-title">
+                            <h3>Welcome</h3>
+                            <h4>Create New Account</h4>
+                        </div>
+
+                        <div class="input-box">
+                            <form class="row g-4" method="POST">
+                                {% csrf_token %}
+                                <div class="col-6">
+                                    <div class="form-floating theme-form-floating">
+                                        <input type="text"
+                                               name="firstName"
+                                               x-model="fields.firstName"
+                                               @input="validate('firstName')"
+                                               class="form-control" id="firstName"
+                                               placeholder="First Name">
+                                        <label for="firstName">First Name</label>
+                                    </div>
+                                    <template x-if="errors.firstName">
+                                        <p class="text-danger small mt-1" x-text="errors.firstName"></p>
+                                    </template>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-6">
+                                    <div class="form-floating theme-form-floating">
+                                        <input type="text"
+                                               name="lastName"
+                                               x-model="fields.lastName"
+                                               @input="validate('lastName')"
+                                               class="form-control" id="lastName"
+                                               placeholder="Last Name">
+                                        <label for="lastName">Last Name</label>
+                                    </div>
+                                    <template x-if="errors.lastName">
+                                        <p class="text-danger small mt-1" x-text="errors.lastName"></p>
+                                    </template>
+                                </div>
+
+                                    <!-- Email -->
+                                    <div class="col-12">
+                                        <div class="form-floating theme-form-floating">
+                                            <input type="email"
+                                                   name="email"
+                                                   x-model="fields.email"
+                                                   @input.debounce.1000ms="validate('email')"
+                                                   class="form-control" id="email"
+                                                   placeholder="Email">
+                                            <label for="email">Email</label>
+                                        </div>
+                                        <template x-if="errors.email">
+                                            <p class="text-danger small mt-1" x-text="errors.email"></p>
+                                        </template>
+                                    </div>
+
+
+                                <!-- Password -->
+                                <div class="col-12">
+                                    <div class="form-floating theme-form-floating">
+                                        <input type="password"
+                                               name="password"
+                                               x-model="fields.password"
+                                               @input="validate('password')"
+                                               class="form-control" id="password"
+                                               placeholder="Password" required>
+                                        <label for="password">Password</label>
+                                    </div>
+                                    <template x-if="errors.password">
+                                        <p class="text-danger small mt-1" x-text="errors.password"></p>
+                                    </template>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-12">
+                                    <div class="form-floating theme-form-floating">
+                                        <input type="password"
+                                               name="confirmPassword"
+                                               x-model="fields.confirmPassword"
+                                               @input="validate('confirmPassword')"
+                                               class="form-control" id="confirm-password"
+                                               placeholder="Confirm Password" required>
+                                        <label for="confirm-password">Confirm Password</label>
+                                    </div>
+                                    <template x-if="errors.confirmPassword">
+                                        <p class="text-danger small mt-1" x-text="errors.confirmPassword"></p>
+                                    </template>
+                                </div>
+
+
+                                <div class="col-12">
+                                    <div class="forgot-box">
+                                        <div class="form-check ps-0 m-0 remember-box">
+                                            <input class="checkbox_animated check-box" type="checkbox"
+                                                id="flexCheckDefault">
+                                            <label class="form-check-label" for="flexCheckDefault">I agree with
+                                                <span>Terms</span> and <span>Privacy</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button class="btn btn-animation w-100" type="submit" :disabled="!isFormValid">Sign Up</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="other-log-in">
+                            <h6>or</h6>
+                        </div>
+
+                        <div class="log-in-button">
+                            <ul>
+                                <li>
+                                    <a href="https://accounts.google.com/signin/v2/identifier?flowName=GlifWebSignIn&amp;flowEntry=ServiceLogin"
+                                        class="btn google-button w-100">
+                                        <img src="{% static 'frontend/assets/images/inner-page/google.png' %}" class="blur-up lazyload"
+                                            alt="">
+                                        Sign up with Google
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://www.facebook.com/" class="btn google-button w-100">
+                                        <img src="{% static 'frontend/assets/images/inner-page/facebook.png' %}" class="blur-up lazyload"
+                                            alt=""> Sign up with Facebook
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="other-log-in">
+                            <h6></h6>
+                        </div>
+
+                        <div class="sign-up-box">
+                            <h4>Already have an account?</h4>
+                            <a href="{% url 'login' %}">Log In</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl-7 col-xl-6 col-lg-6"></div>
+            </div>
+        </div>
+    </section>
+    <!-- log in section end -->
+
+
+
+<script>
+function formValidation() {
+    return {
+        fields: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+        },
+        errors: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+        },
+        rules: {
+            firstName: [
+                { check: val => val.trim() !== '', message: "First name is required." }
+            ],
+            lastName: [
+                { check: val => val.trim() !== '', message: "Last name is required." }
+            ],
+            email: [
+                { check: val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), message: "Enter a valid email." }
+            ],
+            password: [
+                { check: val => val.length >= 6, message: "Password must be at least 6 characters." }
+            ],
+            confirmPassword: [
+                { check: (val, fields) => val === fields.password, message: "Passwords do not match." }
+            ]
+        },
+        async validate(field) {
+            const value = this.fields[field];
+            this.errors[field] = '';
+
+            // Apply static rules
+            if (this.rules[field]) {
+                for (let rule of this.rules[field]) {
+                    if (!rule.check(value, this.fields)) {
+                        this.errors[field] = rule.message;
+                        return; // stop on first error
+                    }
+                }
+            }
+
+            // Async validation for email
+            if (field === 'email' && value) {
+                try {
+                    let response = await fetch(`/api/check-email/?email=${encodeURIComponent(value)}`);
+                    let data = await response.json();
+                    if (data.exists) {
+                        this.errors.email = "Email is already taken.";
+                    }
+
+                } catch (e) {
+                    console.error("Email validation failed:", e);
+                }
+            }
+        },
+        get isFormValid() {
+            return Object.values(this.errors).every(e => e === '') &&
+                   Object.values(this.fields).every(f => f.trim() !== '');
+        }
+    }
+}
+</script>
+
+
+
+{% block footer %}
+{% endblock footer %}
+
+
+{% endblock content %}
+
