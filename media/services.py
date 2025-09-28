@@ -30,7 +30,7 @@ class FileUploader(CustomRequestUtil):
         file_name = f"{str(time.time()).replace('.', '')}{str(time.time()).replace('.', '')}.{ext}"
         return file_name
 
-    def upload(self, file, media_type):
+    def upload(self, file, media_type, product=None):
         original_file_name = file.name
         file_extension = original_file_name.split('.')[-1].lower()
         file_size = self.get_file_size(file)
@@ -62,7 +62,9 @@ class FileUploader(CustomRequestUtil):
             file_url=full_url,
             file_name=original_file_name.strip(f".{file_extension}"),
             file_size=file_size,
-            file_type=self.get_content_type_from_extension(file_extension)
+            file_type=self.get_content_type_from_extension(file_extension),
+            product=product,
+            user=self.user
         )
 
         return uploaded_file, _t("File uploaded.")

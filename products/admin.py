@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from crm.admin import BaseAdmin
-from products.models import Tag, Category, Product, DealOfTheDay, ProductReview
+from media.admin import UploadInline
+from products.models import Tag, Category, Product, ProductReview, Subcategory
 
 
 # Register your models here.
@@ -16,20 +17,20 @@ class CategoryAdmin(BaseAdmin):
     list_display = ["id", "name"] + BaseAdmin.list_display
     search_fields = ["name"]
 
+@admin.register(Subcategory)
+class SubcategoryAdmin(BaseAdmin):
+    list_display = ["id", "name", "category"] + BaseAdmin.list_display
+    search_fields = ["name"]
+
 
 @admin.register(Product)
 class ProductAdmin(BaseAdmin):
-    list_display = ["name", "id", "price", "availability"
+    list_display = ["id", "name", "price", "availability"
                     ] + BaseAdmin.list_display
-    search_fields = ["name", "description"]
+    search_fields = ["name", "description", "price", "sku"]
     list_filter = ["rating", "price"]
 
-
-@admin.register(DealOfTheDay)
-class DealOfTheDayAdmin(BaseAdmin):
-    list_display = ['product', 'discount_percentage', 'start_time', 'end_time', 'is_active']
-    list_filter = ['is_active', 'start_time', 'end_time']
-    search_fields = ['product__name',]
+    inlines = [UploadInline]
 
 
 @admin.register(ProductReview)

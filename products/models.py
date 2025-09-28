@@ -1,12 +1,9 @@
-
+import cloudinary
 from cloudinary.models import CloudinaryField
 from django.db import models
-from django.db.models import ForeignKey
-from django.utils import timezone
 
 from accounts.models import User
 from crm.models import BaseModel, Color
-from media.models import Upload
 from products.services.product_service import generate_sku, generate_unique_slug
 
 
@@ -17,23 +14,53 @@ class Availability(models.TextChoices):
 
 class Category(BaseModel):
     name = models.CharField(max_length=255, unique=True)
-    cover_image = ForeignKey("media.Upload", on_delete=models.SET_NULL, blank=True, null=True)
+    cover_image = CloudinaryField("image", null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.cover_image and not str(self.cover_image).startswith("http"):
+            upload = cloudinary.uploader.upload(
+                self.cover_image,
+                folder="categories",
+                public_id=self.name.replace(" ", "_").lower(),
+                overwrite=True,
+                resource_type="image"
+            )
+            self.cover_image = upload["public_id"]
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name_plural = 'categories'
+        verbose_name_plural = "categories"
+
 
 
 
 class Subcategory(BaseModel):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
-    cover_image = ForeignKey("media.Upload", on_delete=models.SET_NULL, blank=True, null=True)
+    cover_image = CloudinaryField("image", null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.cover_image and not str(self.cover_image).startswith("http"):
+            upload = cloudinary.uploader.upload(
+                self.cover_image,
+                folder="sub_categories",
+                public_id=self.name.replace(" ", "_").lower(),
+                overwrite=True,
+                resource_type="image"
+            )
+            self.cover_image = upload["public_id"]
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.category.name} → {self.name}"
+
+    class Meta:
+        verbose_name_plural = "subcategories"
 
 
 class Tag(BaseModel):
@@ -70,6 +97,7 @@ class Product(BaseModel):
 
     is_featured = models.BooleanField(default=False)
     is_best_seller = models.BooleanField(default=False)
+    deal_of_the_day = models.BooleanField(default=False)
 
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
@@ -109,7 +137,9 @@ class ProductVariant(models.Model):
 
 class ProductReview(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="product_reviews")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="product_reviews", null=True, blank=True
+    )
     rating = models.IntegerField(null=True, blank=True)
     review = models.CharField(max_length=500, null=True, blank=True)
 
@@ -127,17 +157,5 @@ class Wishlist(BaseModel):
     def __str__(self):
         return f"{self.user.first_name} - {self.product.name}"
 
-
-
-class DealOfTheDay(BaseModel):
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    start_time = models.DateTimeField(default=timezone.now)
-    end_time = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=False)
-    number_of_available_stock = models.IntegerField(default=0)
-
-    def __str__(self):
-        return f"Deal for {self.product.name} - {self.discount_percentage}% off"
 
 

@@ -4,10 +4,11 @@ from products.views import RetrieveUpdateDeleteProductView, CreateListProductVie
     WishlistView
 
 urlpatterns = [
-    path('<int:product_id>/', RetrieveUpdateDeleteProductView.as_view(), name="product-detail"),
+    path('<str:product_slug>/', RetrieveUpdateDeleteProductView.as_view(), name="product-detail"),
     path('shop/', CreateListProductView.as_view(), name="shop"),
 
-    path('shop/<str:name>/', CreateListProductView.as_view(), name="category"),
+    path('shop-by-category/<str:name>/', CreateListProductView.as_view(), name="shop-by-category"),
+    path('shop-by-subcategory/<str:name>/', CreateListProductView.as_view(), name="shop-by-subcategory"),
 
     path('wishlist/', WishlistView.as_view(), name="wishlist"),
 

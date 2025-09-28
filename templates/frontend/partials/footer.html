@@ -10,7 +10,7 @@
                                     <h2>Join our newsletter and get...</h2>
                                     <h5>$20 discount for your first order</h5>
                                     <div class="input-box">
-                                        <input type="email" class="form-control" id="exampleFormControlInput1"
+                                        <input type="email" name="email" class="form-control" id="exampleFormControlInput1"
                                             placeholder="Enter Your Email">
                                         <i class="fa-solid fa-envelope arrow"></i>
                                         <button class="sub-btn  btn-animation">
@@ -41,7 +41,7 @@
                                 </div>
 
                                 <div class="service-detail">
-                                    <h5>Every Fresh Products</h5>
+                                    <h5>Best Products</h5>
                                 </div>
                             </div>
 
@@ -96,7 +96,7 @@
                                 <ul class="address">
                                     <li>
                                         <i data-feather="home"></i>
-                                        <a href="javascript:void(0)">1418 Riverwood Drive, CA 96052, US</a>
+                                        <a href="javascript:void(0)">Nigeria</a>
                                     </li>
                                     <li>
                                         <i data-feather="mail"></i>
@@ -114,24 +114,11 @@
 
                         <div class="footer-contain">
                             <ul>
+                                {% for category in categories %}
                                 <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Vegetables & Fruit</a>
+                                    <a href="{% url 'shop-by-category' category.name %}" class="text-content">{{category.name}}</a>
                                 </li>
-                                <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Beverages</a>
-                                </li>
-                                <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Meats & Seafood</a>
-                                </li>
-                                <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Frozen Foods</a>
-                                </li>
-                                <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Biscuits & Snacks</a>
-                                </li>
-                                <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Grocery & Staples</a>
-                                </li>
+                                {% endfor %}
                             </ul>
                         </div>
                     </div>
@@ -144,19 +131,17 @@
                         <div class="footer-contain">
                             <ul>
                                 <li>
-                                    <a href="index.html" class="text-content">Home</a>
+                                    <a href="{% url 'home' %}" class="text-content">Home</a>
                                 </li>
                                 <li>
-                                    <a href="shop-left-sidebar.html" class="text-content">Shop</a>
+                                    <a href="{% url 'shop' %}" class="text-content">Shop</a>
+                                </li>
+
+                                <li>
+                                    <a href="{% url 'home' %}" class="text-content">Become a vendor</a>
                                 </li>
                                 <li>
-                                    <a href="about-us.html" class="text-content">About Us</a>
-                                </li>
-                                <li>
-                                    <a href="blog-list.html" class="text-content">Blog</a>
-                                </li>
-                                <li>
-                                    <a href="contact-us.html" class="text-content">Contact Us</a>
+                                    <a href="{% url 'contact' %}" class="text-content">Contact Us</a>
                                 </li>
                             </ul>
                         </div>
@@ -213,28 +198,28 @@
                                         <i data-feather="mail"></i>
                                         <div class="contact-number">
                                             <h6 class="text-content">Email Address :</h6>
-                                            <h5>fastkart@hotmail.com</h5>
+                                            <h5>support@hotmail.com</h5>
                                         </div>
                                     </div>
                                 </li>
 
-                                <li class="social-app">
-                                    <h5 class="mb-2 text-content">Download App :</h5>
-                                    <ul>
-                                        <li class="mb-0">
-                                            <a href="https://play.google.com/store/apps" target="_blank">
-                                                <img src="https://themes.pixelstrap.com/fastkart/assets/images/playstore.svg" class="blur-up lazyload"
-                                                    alt="">
-                                            </a>
-                                        </li>
-                                        <li class="mb-0">
-                                            <a href="https://www.apple.com/in/app-store/" target="_blank">
-                                                <img src="https://themes.pixelstrap.com/fastkart/assets/images/appstore.svg" class="blur-up lazyload"
-                                                    alt="">
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
+<!--                                <li class="social-app">-->
+<!--                                    <h5 class="mb-2 text-content">Download App :</h5>-->
+<!--                                    <ul>-->
+<!--                                        <li class="mb-0">-->
+<!--                                            <a href="https://play.google.com/store/apps" target="_blank">-->
+<!--                                                <img src="https://themes.pixelstrap.com/fastkart/assets/images/playstore.svg" class="blur-up lazyload"-->
+<!--                                                    alt="">-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                        <li class="mb-0">-->
+<!--                                            <a href="https://www.apple.com/in/app-store/" target="_blank">-->
+<!--                                                <img src="https://themes.pixelstrap.com/fastkart/assets/images/appstore.svg" class="blur-up lazyload"-->
+<!--                                                    alt="">-->
+<!--                                            </a>-->
+<!--                                        </li>-->
+<!--                                    </ul>-->
+<!--                                </li>-->
                             </ul>
                         </div>
                     </div>

@@ -30,6 +30,10 @@
     <!-- In your <head> tag -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+    <link href="https://cdn.jsdelivr.net/npm/iconly@latest/dist/iconly/css/iconly.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/iconly@latest/dist/iconly/iconly.min.js"></script>
+
+
 </head>
 
 <body>
@@ -225,47 +229,11 @@
                                         <div class="onhover-dropdown header-badge">
                                             <button type="button" class="btn p-0 position-relative header-wishlist">
                                                 <i data-feather="shopping-cart"></i>
-                                                <span class="position-absolute top-0 start-100 translate-middle badge">2
-                                                    <span class="visually-hidden">unread messages</span>
+                                                <span class="position-absolute top-0 start-100 translate-middle badge" id="cart-counter">
+                                                    {{ cart|length }}
                                                 </span>
                                             </button>
 
-                                            <div class="onhover-div">
-                                                <ul class="cart-list">
-<!--                                                    cart items-->
-                                                    <li class="product-box-contain">
-                                                        <div class="drop-cart">
-                                                            <a href="product-left-thumbnail.html" class="drop-image">
-                                                                <img src="{% static 'frontend/assets/images/vegetable/product/1.png' %}"
-                                                                    class="blur-up lazyload" alt="">
-                                                            </a>
-
-                                                            <div class="drop-contain">
-                                                                <a href="product-left-thumbnail.html">
-                                                                    <h5>Fantasy Crunchy Choco Chip Cookies</h5>
-                                                                </a>
-                                                                <h6><span>1 x</span> $80.58</h6>
-                                                                <button class="close-button close_button">
-                                                                    <i class="fa-solid fa-xmark"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-
-
-                                                </ul>
-
-                                                <div class="price-box">
-                                                    <h5>Total :</h5>
-                                                    <h4 class="theme-color fw-bold">$106.58</h4>
-                                                </div>
-
-                                                <div class="button-group">
-                                                    <a href="{% url 'cart' %}" class="btn btn-sm cart-button">View Cart</a>
-                                                    <a href="checkout.html" class="btn btn-sm cart-button theme-bg-color
-                                                    text-white">Checkout</a>
-                                                </div>
-                                            </div>
                                         </div>
                                     </li>
                                     <li class="right-side onhover-dropdown">
@@ -325,56 +293,25 @@
                                 <ul class="category-list">
                                     {% for category in categories %}
                                     <li class="onhover-category-list">
-                                        <a href="javascript:void(0)" class="category-name">
-                                            <img src="https://themes.pixelstrap.com/fastkart/assets/svg/1/vegetable.svg" alt="">
-                                            <h6>Vegetables & Fruit</h6>
+                                        <a href="{% url 'shop-by-category' category.name %}" class="category-name">
+<!--                                            <img src="https://themes.pixelstrap.com/fastkart/assets/svg/1/vegetable.svg" alt="">-->
+                                            <h6>{{category.name}}</h6>
                                             <i class="fa-solid fa-angle-right"></i>
                                         </a>
 
                                         <div class="onhover-category-box">
                                             <div class="list-1">
-                                                <div class="category-title-box">
-                                                    <h5>Organic Vegetables</h5>
-                                                </div>
+
                                                 <ul>
+                                                    {% for subcategory in category.subcategories.all %}
                                                     <li>
-                                                        <a href="javascript:void(0)">Potato & Tomato</a>
+                                                        <a href="{% url 'shop-by-subcategory' subcategory.name %}">{{subcategory.name}}</a>
                                                     </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Cucumber & Capsicum</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Leafy Vegetables</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Root Vegetables</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Beans & Okra</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Cabbage & Cauliflower</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Gourd & Drumstick</a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="javascript:void(0)">Specialty</a>
-                                                    </li>
+                                                    {% endfor %}
+
                                                 </ul>
                                             </div>
 
-                                            <div class="list-2">
-                                                <div class="category-title-box">
-                                                    <h5>Fresh Fruit</h5>
-                                                </div>
-                                                <ul>
-
-                                                    <li>
-                                                        <a href="javascript:void(0)">Fruit Baskets</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
                                         </div>
                                     </li>
 
@@ -452,7 +389,7 @@
             <li>
                 <a href="{% url 'wishlist' %}" class="notifi-wishlist">
                     <i class="iconly-Heart icli"></i>
-                    <span>My Wish</span>
+                    <span>My Wishlist</span>
                 </a>
             </li>
 
@@ -563,11 +500,20 @@
     <script src="{% static 'frontend/assets/js/slick/slick-animation.min.js' %}"></script>
     <script src="{% static 'frontend/assets/js/slick/custom_slick.js' %}"></script>
 
+
     <!-- Lazyload Js -->
     <script src="{% static 'frontend/assets/js/lazysizes.min.js' %}"></script>
 
     <!-- script js -->
     <script src="{% static 'frontend/assets/js/script.js' %}"></script>
+
+    <script src="{% static 'frontend/assets/js/cart.js' %}"></script>
+    <script>
+
+
+        const csrfToken = '{{ csrf_token }}';
+    </script>
+
 
     {% include '../partials/messages.html' %}
 </body>

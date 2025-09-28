@@ -17,10 +17,14 @@ class HomeView(View, CustomRequestUtil):
         top_rated = product_service.fetch_list()[:10]
         new_arrivals = product_service.fetch_list()[:10]
         best_seller = product_service.fetch_list()[:10]
+        trending_products = product_service.fetch_list().order_by("-views")[:5]
+        products = product_service.get_random_products(12)
 
         self.extra_context_data["top_rated"] = top_rated
         self.extra_context_data["new_arrivals"] = new_arrivals
         self.extra_context_data["best_seller"] = best_seller
+        self.extra_context_data["trending_products"] = trending_products
+        self.extra_context_data["products"] = products
 
         return self.process_request(request)
 

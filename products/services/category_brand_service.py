@@ -32,7 +32,7 @@ class CategoryService(CustomRequestUtil):
         return self.get_base_query().filter(q)
 
     def get_base_query(self):
-        qs = Category.available_objects.all()
+        qs = Category.available_objects.prefetch_related("subcategories").all()
         return qs
 
     def fetch_single_by_id(self, category_id):

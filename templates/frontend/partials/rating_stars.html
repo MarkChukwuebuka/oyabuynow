@@ -1,0 +1,14 @@
+<div class="product-rating mt-2">
+    <ul class="rating">
+        {% for _ in full_stars %}
+            <li><i data-feather="star" class="fill"></i></li>
+        {% endfor %}
+        {% if half_star %}
+            <li><i data-feather="star-half"></i></li>
+        {% endif %}
+        {% for _ in empty_stars %}
+            <li><i data-feather="star"></i></li>
+        {% endfor %}
+    </ul>
+    <span>({{ rating }})</span>
+</div>

@@ -8,7 +8,6 @@ from django.utils.text import slugify
 from services.util import CustomRequestUtil
 
 
-
 def generate_sku(product_name):
     name_part = product_name[:3].upper()
 
@@ -43,7 +42,6 @@ def generate_unique_slug(instance, field_value, slug_field_name='slug'):
 
 class ProductService(CustomRequestUtil):
 
-
     def create_single(self, payload):
         from products.models import Product
 
@@ -75,7 +73,6 @@ class ProductService(CustomRequestUtil):
         if not is_created:
             return None, self.make_error("There was an error creating the product")
 
-
         return product, None
 
     def fetch_list(self, filter_params=None, category=None):
@@ -85,6 +82,12 @@ class ProductService(CustomRequestUtil):
 
         return self.get_base_query().filter(q)
 
+    def update_product_views(self, product):
+        product.views += 1
+        product.save(update_fields=["views"])
+        product.refresh_from_db()
+
+        return None
 
     def get_related_products(self, product_id, limit=5):
         product, _ = self.fetch_single(product_id)
@@ -98,7 +101,9 @@ class ProductService(CustomRequestUtil):
     def get_base_query(self):
         from products.models import Product
         qs = Product.objects.prefetch_related(
-            "categories", "tags"
+            "tags", "colors", "sub_categories", "product_media"
+        ).select_related(
+            "category", "brand"
         ).order_by("rating")
 
         qs = qs.annotate(
@@ -122,6 +127,13 @@ class ProductService(CustomRequestUtil):
 
     def fetch_single(self, product_id):
         product = self.get_base_query().filter(id=product_id).first()
+        if not product:
+            return None, self.make_error("Product does not exist")
+
+        return product, None
+
+    def fetch_single_by_slug(self, product_slug):
+        product = self.get_base_query().filter(slug=product_slug).first()
         if not product:
             return None, self.make_error("Product does not exist")
 
@@ -161,4 +173,7 @@ class ProductService(CustomRequestUtil):
             'rating_distribution': rating_distribution,
         }
 
-
+    def get_random_products(self, n=20):
+        ids = list(self.fetch_list().values_list('id', flat=True))
+        random_ids = random.sample(ids, min(len(ids), n))
+        return self.get_base_query().filter(id__in=random_ids)
