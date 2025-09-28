@@ -8,13 +8,16 @@ from services.util import CustomRequestUtil
 
 
 class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
-    template_name = "product-detail.html"
+    template_name = "frontend/product-detail.html"
     context_object_name = 'product'
-    template_on_error = "product-detail.html"
+    template_on_error = "frontend/product-detail.html"
 
     def get(self, request, *args, **kwargs):
         product_service = ProductService(self.request)
-        product, error = product_service.fetch_single(kwargs.get("product_id"))
+        product, error = product_service.fetch_single_by_slug(kwargs.get("product_slug"))
+
+        print(product)
+
 
         related_products = product_service.get_related_products(product.id)
         ratings_data = product_service.fetch_product_ratings(product.id)

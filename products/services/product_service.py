@@ -93,7 +93,7 @@ class ProductService(CustomRequestUtil):
         product, _ = self.fetch_single(product_id)
 
         related_products = self.get_base_query().filter(
-            models.Q(categories__in=product.categories.all()) | models.Q(tags__in=product.tags.all())
+            models.Q(category=product.category) | models.Q(tags__in=product.tags.all())
         ).exclude(id=product.id).distinct()[:limit]
 
         return related_products
