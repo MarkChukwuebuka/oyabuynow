@@ -40,7 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const productId = this.dataset.productId;
             const addUrl = this.dataset.url;
             const removeUrl = this.dataset.removeUrl;
+            const qty = this.dataset.quantity || 1;
             const isAdded = this.classList.contains("in-cart"); // check if already in cart
+
 
             const url = isAdded ? removeUrl : addUrl;
 
@@ -50,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrfToken,  // make sure csrfToken is defined in template
                 },
-                body: JSON.stringify({ product_id: productId })
+                body: JSON.stringify({ product_id: productId, product_qty: qty }),
             })
             .then(response => {
                 if (!response.ok) {
@@ -99,11 +101,84 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
 
-
-
-
-
-
-
     });
 });
+
+
+
+function updateCart(productId, quantity, url) {
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,  // make sure csrfToken is defined in template
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            product_qty: quantity
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        if (data.success) {
+            showToast(data.message, "success");
+            if (data.cart_count !== undefined) {
+                updateCartCounter(data.cart_count);
+            }
+
+        } else {
+            showToast(data.message, "error");
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        showToast("An error occurred while updating the cart.", "error");
+    });
+}
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Select all elements with class 'qtyminus' and 'qtyplus'
+    document.querySelectorAll('.qtyminus').forEach(function (element) {
+        element.addEventListener('click', function (e) {
+            e.preventDefault();
+            var input = this.parentElement.querySelector('input.qty-input');
+            var currentValue = parseInt(input.value);
+            var url = this.dataset.url;
+            var productId = input.id.replace('select', ''); // Extract product ID from input field ID
+
+            if (!isNaN(currentValue) && currentValue > 1) {
+                input.value = currentValue - 1;
+            } else {
+                input.value = 1; // Prevent going below 1
+            }
+
+            updateCart(productId, input.value, url); // Trigger the update after decrement
+        });
+    });
+
+    document.querySelectorAll('.qtyplus').forEach(function (element) {
+        element.addEventListener('click', function (e) {
+            e.preventDefault();
+            var input = this.parentElement.querySelector('input.qty-input');
+            var currentValue = parseInt(input.value);
+            var url = this.dataset.url;
+            var productId = input.id.replace('select', ''); // Extract product ID from input field ID
+
+
+            if (!isNaN(currentValue)) {
+                input.value = currentValue + 1;
+            } else {
+                input.value = 1; // If the input value is not a number, set it to 1
+            }
+
+            updateCart(productId, input.value, url); // Trigger the update after increment
+        });
+    });
+});
+

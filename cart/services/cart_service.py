@@ -46,18 +46,22 @@ class CartService(CustomRequestUtil):
     def add(self, product_id, quantity, update_quantity=False):
         # This method is used to add products to the cart.
         product_id = str(product_id)
+        message = ""
 
         if product_id not in self.cart:
             self.cart[product_id] = {'quantity': quantity, 'id': product_id}
+            message = "Item has been added to cart"
 
         if update_quantity:
             self.cart[product_id]['quantity'] = int(quantity)
+            message = "Cart has been updated"
 
             if self.cart[product_id]['quantity'] == 0:
                 self.remove(product_id)
+                message = "Item has been removed from cart"
 
         self.save()
-        message = "Item has been added to cart"
+
         return message, None
 
     def remove(self, product_id):

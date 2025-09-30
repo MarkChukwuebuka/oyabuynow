@@ -249,18 +249,39 @@
 
                                         <div class="onhover-div onhover-div-login">
                                             <ul class="user-box-name">
-                                                <li class="product-box-contain">
-                                                    <i></i>
-                                                    <a href="{% url 'login' %}">Log In</a>
-                                                </li>
+                                                {% if user.is_authenticated %}
 
-                                                <li class="product-box-contain">
-                                                    <a href="{% url 'signup' %}">Register</a>
-                                                </li>
+                                                    <li class="product-box-contain">
+                                                        <i></i>
+                                                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                                                    </li>
 
-                                                <li class="product-box-contain">
-                                                    <a href="{% url 'forgot-password' %}">Forgot Password</a>
-                                                </li>
+                                                    <li class="product-box-contain">
+                                                        <i></i>
+                                                        <a href="{% url 'my-orders' %}">Orders</a>
+                                                    </li>
+
+                                                    <li class="product-box-contain">
+                                                        <i></i>
+                                                        <a href="{% url 'logout' %}">Logout</a>
+                                                    </li>
+
+                                                {% else %}
+
+                                                    <li class="product-box-contain">
+                                                        <i></i>
+                                                        <a href="{% url 'login' %}">Log In</a>
+                                                    </li>
+
+                                                    <li class="product-box-contain">
+                                                        <a href="{% url 'signup' %}">Register</a>
+                                                    </li>
+
+                                                    <li class="product-box-contain">
+                                                        <a href="{% url 'forgot-password' %}">Forgot Password</a>
+                                                    </li>
+
+                                                {% endif %}
                                             </ul>
                                         </div>
                                     </li>
@@ -508,6 +529,8 @@
     <script src="{% static 'frontend/assets/js/script.js' %}"></script>
 
     <script src="{% static 'frontend/assets/js/cart.js' %}"></script>
+    <script src="{% static 'frontend/assets/js/countdown.js' %}"></script>
+    <script src="{% static 'frontend/assets/js/wishlist.js' %}"></script>
     <script>
 
 

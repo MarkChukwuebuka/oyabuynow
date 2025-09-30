@@ -1,6 +1,7 @@
 import cloudinary
 from cloudinary.models import CloudinaryField
 from django.db import models
+from django.utils import timezone
 
 from accounts.models import User
 from crm.models import BaseModel, Color
@@ -85,22 +86,22 @@ class Product(BaseModel):
     brand = models.ForeignKey("Brand", on_delete=models.SET_NULL, null=True, blank=True)
 
     price = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    cost_price = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     percentage_discount = models.IntegerField(null=True, blank=True)
 
     sku = models.CharField(max_length=255, blank=True, null=True, unique=True)
     description = models.TextField(null=True, blank=True)
+    short_description = models.TextField(null=True, blank=True)
 
     stock = models.PositiveIntegerField(null=True, blank=True)
     colors = models.ManyToManyField(Color, blank=True, related_name="products")
     tags = models.ManyToManyField(Tag, blank=True, related_name="products")
 
-    is_featured = models.BooleanField(default=False)
-    is_best_seller = models.BooleanField(default=False)
-    deal_of_the_day = models.BooleanField(default=False)
+    add_product_to_sales = models.BooleanField(default=False)
+    sale_start = models.DateTimeField(null=True, blank=True)
+    sale_end = models.DateTimeField(null=True, blank=True)
 
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    rating = models.PositiveIntegerField(null=True, blank=True)
     dimensions = models.CharField(max_length=100, blank=True, null=True)
     free_shipping = models.BooleanField(default=False)
 
@@ -122,6 +123,27 @@ class Product(BaseModel):
             self.slug = generate_unique_slug(self, self.name)
 
         super().save(*args, **kwargs)
+
+    @property
+    def is_on_sale(self):
+        now = timezone.now()
+        return (
+                self.sale_start
+                and self.sale_end
+                and self.sale_start <= now <= self.sale_end
+        )
+
+    @property
+    def sale_status(self):
+        now = timezone.now()
+        if not self.sale_start or not self.sale_end:
+            return "no_sale"
+        elif now < self.sale_start:
+            return "upcoming"  # sale not started yet
+        elif self.sale_start <= now <= self.sale_end:
+            return "active"  # sale running
+        else:
+            return "ended"  # sale finished
 
 
 class ProductVariant(models.Model):
@@ -148,14 +170,13 @@ class ProductReview(BaseModel):
 
 
 class Wishlist(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlist_items")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wishlist_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="wishlist_entries")
 
     class Meta:
         unique_together = ('user', 'product')
 
     def __str__(self):
         return f"{self.user.first_name} - {self.product.name}"
-
 
 

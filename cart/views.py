@@ -42,6 +42,25 @@ def add_to_cart(request):
 
 
 @csrf_exempt
+def update_cart(request):
+    cart_service = CartService(request)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product_id = data.get("product_id")
+        quantity = data.get("product_qty")
+
+        res, _ = cart_service.add(product_id, quantity, True)
+
+        return JsonResponse({
+            "success": True,
+            "message": res
+        })
+
+    return None
+
+
+@csrf_exempt
 def remove_from_cart(request):
     cart_service = CartService(request)
 
@@ -68,20 +87,3 @@ def cart(request):
         "title": "Cart"
     }
     return render(request, 'cart.html', context)
-
-
-def update_cart(request):
-    cart_service = CartService(request)
-    action = request.POST.get('action')
-    product_id = int(request.POST.get('product_id'))
-
-    if action == 'update':
-        quantity = int(request.POST.get('product_qty'))
-        cart_service.add(product_id, quantity, True)
-
-        return redirect('cart')
-
-    elif action == 'remove':
-        cart_service.remove(product_id)
-
-        return redirect('cart')

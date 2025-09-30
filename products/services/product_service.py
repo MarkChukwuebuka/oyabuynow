@@ -134,6 +134,7 @@ class ProductService(CustomRequestUtil):
 
     def fetch_single_by_slug(self, product_slug):
         product = self.get_base_query().filter(slug=product_slug).first()
+
         if not product:
             return None, self.make_error("Product does not exist")
 

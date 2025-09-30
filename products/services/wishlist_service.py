@@ -23,9 +23,9 @@ class WishlistService(CustomRequestUtil, LoginRequiredMixin):
             message = "Added to wishlist"
         else:
             self.hard_delete(wishlist_item)
-            error = "Removed from wishlist"
+            message = "Removed from wishlist"
 
-        return message, error
+        return message, None
 
     def fetch_list(self):
         from products.models import Wishlist

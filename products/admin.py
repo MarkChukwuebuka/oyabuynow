@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from crm.admin import BaseAdmin
 from media.admin import UploadInline
-from products.models import Tag, Category, Product, ProductReview, Subcategory
+from products.models import Tag, Category, Product, ProductReview, Subcategory, Wishlist
 
 
 # Register your models here.
@@ -38,3 +38,10 @@ class ProductReviewAdmin(BaseAdmin):
     list_display = ['product', 'rating', 'user', 'review', 'created_at']
     list_filter = ['rating', 'user']
     search_fields = ['product__name', 'review']
+
+
+@admin.register(Wishlist)
+class WishlistAdmin(BaseAdmin):
+    list_display = ['product', 'user', 'created_at']
+    list_filter = ['product__name', 'user__email']
+    search_fields = ['product__name', 'user__email']

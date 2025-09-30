@@ -1,6 +1,9 @@
+import json
+
 from django.http import JsonResponse
 from django.views import View
 
+from products.models import Wishlist
 from products.services.product_service import ProductService
 from products.services.review_service import ProductReviewService
 from products.services.wishlist_service import WishlistService
@@ -16,22 +19,25 @@ class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
         product_service = ProductService(self.request)
         product, error = product_service.fetch_single_by_slug(kwargs.get("product_slug"))
 
-        print(product)
-
-
-        related_products = product_service.get_related_products(product.id)
+        related_products = product_service.get_related_products(product.id)[:5]
         ratings_data = product_service.fetch_product_ratings(product.id)
         avg_rating = round(ratings_data.get('avg_rating', 0), 1)
+        trending_products = product_service.fetch_list().order_by("-views").exclude(id=product.id)[:5]
 
         self.extra_context_data = {
             "title": product.name,
             "related_products": related_products,
             'ratings_data': {**ratings_data, 'avg_rating': avg_rating},
             'rating_range': range(1, 6),
+            'trending_products': trending_products,
         }
 
+        if self.auth_user:
+            in_wishlist = Wishlist.objects.filter(user=self.auth_user, product=product).exists()
+            self.extra_context_data['in_wishlist'] = in_wishlist
+
         return self.process_request(
-            request, target_function=product_service.fetch_single, product_id=kwargs.get("product_id")
+            request, target_function=product_service.fetch_single_by_slug, product_slug=kwargs.get("product_slug")
         )
 
     def post(self, request, *args, **kwargs):
@@ -82,7 +88,8 @@ class CreateListProductView(View, CustomRequestUtil):
 
 class AddOrRemoveFromWishlistView(View, CustomRequestUtil):
     def post(self, request, *args, **kwargs):
-        product_id = int(request.POST.get('product_id'))
+        data = json.loads(request.body)
+        product_id = int(data.get('product_id'))
         wishlist_service = WishlistService(self.request)
 
         message, error = wishlist_service.add_or_remove({"product": product_id})
@@ -90,7 +97,10 @@ class AddOrRemoveFromWishlistView(View, CustomRequestUtil):
         if error:
             return JsonResponse({"error": error}, status=400)
 
-        return JsonResponse({"message": message})
+        return JsonResponse({
+            "success": True,
+            "message": message
+        })
 
 
 class WishlistView(View, CustomRequestUtil):
