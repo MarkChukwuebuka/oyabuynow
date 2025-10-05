@@ -1,0 +1,18 @@
+{% load dict_extras %}
+
+
+<ul class="product-rating-list">
+  {% for star in "54321" %}
+    {% with data=ratings|dict_get:star %}
+      <li>
+        <div class="rating-product">
+          <h5>{{ star }}<i data-feather="star"></i></h5>
+          <div class="progress">
+            <div class="progress-bar" style="width: {{ data.percent|default:0 }}%;"></div>
+          </div>
+          <h5 class="total">{{ data.count|default:0 }}</h5>
+        </div>
+      </li>
+    {% endwith %}
+  {% endfor %}
+</ul>

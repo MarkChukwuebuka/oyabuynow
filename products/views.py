@@ -1,5 +1,8 @@
 import json
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views import View
 
@@ -23,6 +26,9 @@ class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
         ratings_data = product_service.fetch_product_ratings(product.id)
         avg_rating = round(ratings_data.get('avg_rating', 0), 1)
         trending_products = product_service.fetch_list().order_by("-views").exclude(id=product.id)[:5]
+        reviews = product.reviews.all().order_by('-created_at')[:3]
+
+        product_service.update_product_views(product)
 
         self.extra_context_data = {
             "title": product.name,
@@ -30,6 +36,7 @@ class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
             'ratings_data': {**ratings_data, 'avg_rating': avg_rating},
             'rating_range': range(1, 6),
             'trending_products': trending_products,
+            'reviews': reviews,
         }
 
         if self.auth_user:
@@ -73,17 +80,21 @@ class CreateListProductView(View, CustomRequestUtil):
     }
 
     def get(self, request, *args, **kwargs):
-        self.template_name = "shop.html"
-        self.context_object_name = 'products'
+        self.template_name = "frontend/product-list.html"
+        self.context_object_name = 'page_obj'
 
-        category = kwargs.get('name', None)
+        category = kwargs.get('category_name', None)
+        subcategory = kwargs.get('subcategory_name', None)
+        if category:
+            self.extra_context_data['title'] = f"{category}"
+        if subcategory:
+            self.extra_context_data['title'] = f"{subcategory}"
         product_service = ProductService(self.request)
 
-        # paginator = Paginator(all_products, 20)
-        # page_number = request.GET.get('page', 1)
 
         return self.process_request(
-            request, target_function=product_service.fetch_list, category=category
+            request, target_function=product_service.fetch_list,
+            category=category, subcategory=subcategory, paginate=True
         )
 
 class AddOrRemoveFromWishlistView(View, CustomRequestUtil):
@@ -103,12 +114,14 @@ class AddOrRemoveFromWishlistView(View, CustomRequestUtil):
         })
 
 
-class WishlistView(View, CustomRequestUtil):
+class WishlistView(LoginRequiredMixin, View, CustomRequestUtil):
     extra_context_data = {
         "title":"My Wishlist"
     }
+    login_url = '/login/'
+
     def get(self, request, *args, **kwargs):
-        self.template_name = "wishlist.html"
+        self.template_name = "frontend/wishlist.html"
         self.context_object_name = 'wishlist_items'
 
         wishlist_service = WishlistService(self.request)

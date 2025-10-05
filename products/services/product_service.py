@@ -1,6 +1,7 @@
 import random
 import string
 
+from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Case, When, ExpressionWrapper, DecimalField, F, Q, Avg
 from django.utils.text import slugify
@@ -48,6 +49,7 @@ class ProductService(CustomRequestUtil):
         name = payload.get("name")
         price = payload.get("price")
         percentage_discount = payload.get("percentage_discount")
+        short_description = payload.get("short_description")
         description = payload.get("description")
         stock = payload.get("stock")
         cost_price = payload.get("cost_price")
@@ -75,12 +77,26 @@ class ProductService(CustomRequestUtil):
 
         return product, None
 
-    def fetch_list(self, filter_params=None, category=None):
+    def fetch_list(self, category=None, subcategory=None, paginate=False):
         q = Q()
         if category:
-            q &= Q(categories__name__iexact=category)
+            q &= Q(category__name__iexact=category)
 
-        return self.get_base_query().filter(q)
+        if subcategory:
+            q &= Q(sub_categories__name__iexact=subcategory)
+
+        products = self.get_base_query().filter(q).distinct()
+
+        if paginate:
+            paginator = Paginator(products, 25)  # 25 items per page
+
+            # get the current page number from request
+            page_number = self.request.GET.get("page", 1)
+            page_obj = paginator.get_page(page_number)
+
+            return page_obj
+
+        return products
 
     def update_product_views(self, product):
         product.views += 1

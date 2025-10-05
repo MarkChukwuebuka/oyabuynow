@@ -1,0 +1,179 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+{% block content %}
+
+
+    <!-- Cart Section Start -->
+    <section class="cart-section section-b-space">
+        <div class="container-fluid-lg">
+            {% if cart %}
+            <div class="row g-sm-5 g-3">
+                <div class="col-xxl-9">
+                    <div class="cart-table">
+                        <div class="table-responsive-xl">
+                            <table class="table">
+                                <tbody>
+                                    {% for item in cart %}
+                                    <tr class="product-box-contain">
+                                        <td class="product-detail">
+                                            <div class="product border-0">
+                                                <a href="{% url 'product-detail' item.product.slug %}" class="product-image">
+                                                    {% with item.product.product_media.first as first_media %}
+                                                    {% if first_media %}
+                                                        <img src="{{first_media.image.url}}"
+                                                        class="img-fluid blur-up lazyload" alt="{{item.product.name}}">
+                                                    {% endif %}
+                                                {% endwith %}
+                                                </a>
+                                                <div class="product-detail">
+                                                    <ul>
+                                                        <li class="name">
+                                                            <a href="{% url 'product-detail' item.product.slug %}">{{item.product.name}}</a>
+                                                        </li>
+
+
+
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="price">
+                                            <h4 class="table-title text-content">Price</h4>
+                                            <h5>
+                                                {% if item.product.percentage_discount %}
+                                                <span class="theme-color">
+                                                    {{ item.product.discounted_price | naira }}
+                                                </span>
+                                                <del>{{ item.product.price | naira }}</del>
+                                                {% else %}
+                                                <span class="theme-color">
+                                                    {{ item.product.price | naira }}
+                                                </span>
+                                                {% endif %}
+                                            </h5>
+                                        </td>
+
+                                        <td class="quantity">
+                                            <h4 class="table-title text-content">Qty</h4>
+                                            <div class="quantity-price">
+                                                <div class="cart_qty">
+                                                    <div class="input-group">
+                                                        <button
+                                                                type="button"
+                                                                class="btn qty-left-minus qtyminus"
+                                                                data-type="minus" data-field=""
+                                                                data-index="{{ item.product.id }}"
+                                                                data-url="{% url 'update_cart' %}"
+                                                        >
+                                                            <i class="fa fa-minus ms-0"></i>
+                                                        </button>
+                                                        <input class="form-control input-number qty-input" type="text"
+                                                            name="quantity" value="{{item.quantity}}" id="select{{ item.product.id }}">
+                                                        <button type="button" class="btn qty-right-plus qtyplus"
+                                                            data-type="plus" data-field=""
+                                                                data-index="{{ item.product.id }}"
+                                                                data-url="{% url 'update_cart' %}"
+                                                        >
+                                                            <i class="fa fa-plus ms-0"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="subtotal">
+                                            <h4 class="table-title text-content">Total</h4>
+                                            <h5>{{item.total_price | naira}}</h5>
+                                        </td>
+
+                                        <td class="save-remove">
+                                            <h4 class="table-title text-content in-cart ">Action</h4>
+                                            <a data-remove-url="{% url 'remove_from_cart' %}"
+                                               id="cart-btn-{{item.product.id}}"
+                                               class="remove btn close_button in-cart addcart-button"
+                                               href="javascript:void(0)"
+                                               data-product-id="{{item.product.id}}"
+                                            >Remove</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xxl-3">
+                    <div class="summery-box p-sticky">
+                        <div class="summery-header">
+                            <h3>Cart Total</h3>
+                        </div>
+
+                        <div class="summery-contain">
+<!--                            <div class="coupon-cart">-->
+<!--                                <h6 class="text-content mb-2">Coupon Apply</h6>-->
+<!--                                <div class="mb-3 coupon-box input-group">-->
+<!--                                    <input type="email" class="form-control" id="exampleFormControlInput1"-->
+<!--                                        placeholder="Enter Coupon Code Here...">-->
+<!--                                    <button class="btn-apply">Apply</button>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                            <ul>
+<!--                                <li>-->
+<!--                                    <h4>Subtotal</h4>-->
+<!--                                    <h4 class="price">$125.65</h4>-->
+<!--                                </li>-->
+
+<!--                                <li>-->
+<!--                                    <h4>Coupon Discount</h4>-->
+<!--                                    <h4 class="price">(-) 0.00</h4>-->
+<!--                                </li>-->
+
+<!--                                <li class="align-items-start">-->
+<!--                                    <h4>Shipping</h4>-->
+<!--                                    <h4 class="price text-end">$6.90</h4>-->
+<!--                                </li>-->
+                            </ul>
+                        </div>
+
+                        <ul class="summery-total">
+                            <li class="list-total border-top-0">
+                                <h4>Total (NGN)</h4>
+                                <h4 class="price theme-color">{{cart.get_total_cost | naira}}</h4>
+                            </li>
+                        </ul>
+
+                        <div class="button-group cart-button">
+                            <ul>
+                                <li>
+                                    <button onclick="location.href = '{% url 'checkout' %}';"
+                                        class="btn btn-animation proceed-btn fw-bold">Process To Checkout</button>
+                                </li>
+
+                                <li>
+                                    <button onclick="location.href = '{% url 'home' %}';"
+                                        class="btn btn-light shopping-button text-dark">
+                                        <i class="fa-solid fa-arrow-left-long"></i>Return To Shopping</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+
+                <h5>There are no items in your cart</h5>
+
+            {% endif %}
+
+        </div>
+    </section>
+    <!-- Cart Section End -->
+
+{% endblock content %}

@@ -52,6 +52,7 @@ def update_cart(request):
 
         res, _ = cart_service.add(product_id, quantity, True)
 
+
         return JsonResponse({
             "success": True,
             "message": res
@@ -63,6 +64,7 @@ def update_cart(request):
 @csrf_exempt
 def remove_from_cart(request):
     cart_service = CartService(request)
+    print("yesssssssssssssssssssssss")
 
     if request.method == "POST":
         data = json.loads(request.body)
@@ -86,4 +88,4 @@ def cart(request):
     context = {
         "title": "Cart"
     }
-    return render(request, 'cart.html', context)
+    return render(request, 'frontend/cart.html', context)

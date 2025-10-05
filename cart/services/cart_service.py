@@ -22,7 +22,8 @@ class CartService(CustomRequestUtil):
     def __iter__(self):
         product_service = ProductService(self.request)
         for p in self.cart.keys():
-            self.cart[str(p)]['product'] = product_service.get_base_query().filter(pk=p).first()
+            print(p)
+            self.cart[str(p)]['product'] = product_service.get_base_query().filter(id=p).first()
 
         for item in self.cart.values():
             if item['product'].percentage_discount:

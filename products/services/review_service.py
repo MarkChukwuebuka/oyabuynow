@@ -1,6 +1,7 @@
-from django.db.models import F, Q, Avg
+from django.db.models import F, Q, Avg, Count
 from django.utils import timezone
 
+from products.services.product_service import ProductService
 from services.util import CustomRequestUtil
 
 
@@ -25,7 +26,8 @@ class ProductReviewService(CustomRequestUtil):
             avg_rating=Avg("rating")
         )["avg_rating"]
 
-        product.update(rating=average_rating)
+        product.rating = average_rating
+        product.save(update_fields=['rating'])
 
         if not is_created:
             return "You've updated your review on this product", None
@@ -43,3 +45,33 @@ class ProductReviewService(CustomRequestUtil):
             first_name=F("user__first_name"),
             last_name=F("user__last_name")
         ).order_by('-created_at')
+
+
+def get_rating_breakdown(product):
+    """
+    Returns dict with counts and percentages for each star rating (5 to 1).
+
+    """
+
+    total_reviews = product.reviews.count()
+    if total_reviews == 0:
+        return {
+            "total": 0,
+            "ratings": {i: {"count": 0, "percent": 0} for i in range(5, 0, -1)}
+        }
+
+    # count reviews per rating
+    counts = (
+        product.reviews.values("rating")
+        .annotate(count=Count("id"))
+        .order_by("-rating")
+    )
+
+    result = {i: {"count": 0, "percent": 0} for i in range(5, 0, -1)}
+    for entry in counts:
+        rating = entry["rating"]
+        count = entry["count"]
+        percent = round((count / total_reviews) * 100, 2)
+        result[rating] = {"count": count, "percent": percent}
+
+    return {"total": total_reviews, "ratings": result}

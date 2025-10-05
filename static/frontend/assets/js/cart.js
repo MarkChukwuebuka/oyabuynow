@@ -127,6 +127,7 @@ function updateCart(productId, quantity, url) {
             if (data.cart_count !== undefined) {
                 updateCartCounter(data.cart_count);
             }
+            location.reload(); // Reload the page to reflect changes
 
         } else {
             showToast(data.message, "error");
@@ -161,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateCart(productId, input.value, url); // Trigger the update after decrement
         });
     });
+
 
     document.querySelectorAll('.qtyplus').forEach(function (element) {
         element.addEventListener('click', function (e) {

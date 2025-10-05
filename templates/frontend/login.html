@@ -24,6 +24,8 @@
                         <div class="input-box">
                             <form class="row g-4" method="POST">
                                 {% csrf_token %}
+
+                                <input type="hidden" name="next" value="{{ request.GET.next }}">
                                 <div class="col-12">
                                     <div class="form-floating theme-form-floating log-in-form">
                                         <input type="email" class="form-control" name="email" id="email" placeholder="Email Address">

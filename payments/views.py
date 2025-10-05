@@ -53,17 +53,12 @@ def verify_payment(request, ref):
 
 
 @login_required
-def start_order(request):
-    categories = Category.objects.all()
-    split_point = (len(categories) + 1) // 2  # Calculate the middle point
-    left_categories = categories[:split_point]
-    right_categories = categories[split_point:]
+def check_out(request):
+
     bank = BankAccount.objects.filter(id=1).first()
 
     context = {
         "title":"Checkout",
-        "left_categories": left_categories,
-        "right_categories": right_categories,
         "bank": bank
 
     }
@@ -81,11 +76,6 @@ def start_order(request):
             state = request.POST.get("state"),
             phone = request.POST.get("phone"),
         )
-
-        try:
-            receipt = request.FILES['screenshot']
-        except:
-            receipt = None
 
         order = OrderService(request).create_single(payload)
 
@@ -132,7 +122,7 @@ def start_order(request):
             "right_categories": right_categories
         }
         cart.clear()
-        send_email('emails/order-initiated.html', context, 'Order Initiated', 'whoisfreee@gmail.com')
+        # send_email('emails/order-initiated.html', context, 'Order Initiated', 'whoisfreee@gmail.com')
 
         return render(request, 'order-success.html', context)
 
