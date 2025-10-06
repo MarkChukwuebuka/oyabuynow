@@ -21,11 +21,11 @@
                                             <div class="product border-0">
                                                 <a href="{% url 'product-detail' item.product.slug %}" class="product-image">
                                                     {% with item.product.product_media.first as first_media %}
-                                                    {% if first_media %}
-                                                        <img src="{{first_media.image.url}}"
-                                                        class="img-fluid blur-up lazyload" alt="{{item.product.name}}">
-                                                    {% endif %}
-                                                {% endwith %}
+                                                        {% if first_media %}
+                                                            <img src="{{first_media.image.url}}"
+                                                            class="img-fluid blur-up lazyload" alt="{{item.product.name}}">
+                                                        {% endif %}
+                                                    {% endwith %}
                                                 </a>
                                                 <div class="product-detail">
                                                     <ul>

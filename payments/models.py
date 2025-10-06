@@ -73,7 +73,6 @@ class Payment(BaseModel):
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     order = models.OneToOneField(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment')
-    receipt = CloudinaryField('receipt', blank=True, null=True)
 
     def __str__(self):
         return f"{self.user} - {self.amount}"

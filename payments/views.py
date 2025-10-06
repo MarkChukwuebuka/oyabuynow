@@ -56,14 +56,16 @@ def verify_payment(request, ref):
 def check_out(request):
 
     bank = BankAccount.objects.filter(id=1).first()
+    last_order = Order.objects.last()
 
     context = {
         "title":"Checkout",
-        "bank": bank
-
+        "bank": bank,
+        "last_order": last_order
     }
+
     cart = CartService(request)
-    user = request.user
+    current_user = request.user
     product_service = ProductService(request)
 
     if request.method == 'POST':
@@ -96,14 +98,19 @@ def check_out(request):
 
             total_cost += item_cost
 
-            order_item = OrderItem.objects.create(order=order,
-                                                 product=product_instance,
-                                                 price=item_cost,
-                                                 quantity=quantity_in_cart
-                                                 )
+            order_item = OrderItem.objects.create(
+                order=order,
+                product=product_instance,
+                price=item_cost,
+                quantity=quantity_in_cart
+            )
 
         payment = Payment.objects.create(
-            amount=total_cost, email=user.email, user=user, order=order, receipt=receipt, ref=order.ref
+            amount=total_cost,
+            email=current_user.email,
+            user=current_user,
+            order=order,
+            ref=order.ref
         )
 
         order.total_cost = total_cost
@@ -118,15 +125,13 @@ def check_out(request):
             'ref': order.ref,
             'total_cost': total_cost,
             'payment': payment,
-            "left_categories": left_categories,
-            "right_categories": right_categories
         }
         cart.clear()
         # send_email('emails/order-initiated.html', context, 'Order Initiated', 'whoisfreee@gmail.com')
 
-        return render(request, 'order-success.html', context)
+        return render(request, 'frontend/order-success.html', context)
 
-    return render(request, 'checkout.html', context)
+    return render(request, 'frontend/checkout.html', context)
 
 
 class CreateListOrderView(View, CustomRequestUtil):
