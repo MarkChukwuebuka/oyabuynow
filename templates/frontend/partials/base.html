@@ -8,11 +8,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Fastkart">
-    <meta name="keywords" content="Fastkart">
-    <meta name="author" content="Fastkart">
+    <meta name="description" content="OyaBuyNow">
+    <meta name="keywords" content="OyaBuyNow">
+    <meta name="author" content="OyaBuyNow">
     <link rel="icon" href="{% static 'frontend/assets/images/favicon/1.png' %}" type="image/x-icon">
-    <title>{{ title }}</title>
+    <title>{{ title }} | OyaBuyNow</title>
 
     <!-- Google font -->
     <link rel="preconnect" href="https://fonts.gstatic.com/">
@@ -72,7 +72,7 @@
                             <div class="notification-slider">
                                 <div>
                                     <div class="timer-notification">
-                                        <h6><strong class="me-1">Welcome to Fastkart!</strong>Wrap new offers/gift
+                                        <h6><strong class="me-1">Welcome to OyaBuyNow!</strong>Wrap new offers/gift
                                             every single day on Weekends.<strong class="ms-1">New Coupon Code: Fast024
                                             </strong>
 
@@ -261,7 +261,7 @@
 
                                                     <li class="product-box-contain">
                                                         <i></i>
-                                                        <a href="{% url 'my-orders' %}">Orders</a>
+                                                        <a href="{% url 'orders' %}">Orders</a>
                                                     </li>
 
                                                     <li class="product-box-contain">
@@ -364,7 +364,7 @@
                                             </li>
 
                                             <li class="nav-item">
-                                                <a class="nav-link" href="{% url 'contact' %}">Become A Vendor</a>
+                                                <a class="nav-link" href="{% url 'onboard-vendor' %}">Become A Vendor</a>
                                             </li>
 
                                         </ul>
@@ -531,12 +531,13 @@
     <!-- script js -->
     <script src="{% static 'frontend/assets/js/script.js' %}"></script>
 
+
     <script src="{% static 'frontend/assets/js/cart.js' %}"></script>
     <script src="{% static 'frontend/assets/js/countdown.js' %}"></script>
     <script src="{% static 'frontend/assets/js/wishlist.js' %}"></script>
+    <script src="{% static 'frontend/assets/js/bank.js' %}"></script>
+
     <script>
-
-
         const csrfToken = '{{ csrf_token }}';
     </script>
 

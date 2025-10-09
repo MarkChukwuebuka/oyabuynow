@@ -1,7 +1,4 @@
 from django.db.models import F, Q, Avg, Count
-from django.utils import timezone
-
-from products.services.product_service import ProductService
 from services.util import CustomRequestUtil
 
 

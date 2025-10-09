@@ -1,5 +1,7 @@
 import re
 
+import cloudinary
+from cloudinary.models import CloudinaryField
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
@@ -10,6 +12,10 @@ from django.utils.translation import gettext_lazy as _
 
 from crm.models import BaseModel
 
+class VendorStatus(models.TextChoices):
+    pending = "Pending"
+    approved = "Approved"
+    rejected = "Rejected"
 
 class UserTypes(TextChoices):
     admin = "Admin"
@@ -58,6 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     last_name = models.CharField(max_length=150, blank=True)
     user_type = models.CharField(max_length=150, default=UserTypes.customer, choices=UserTypes.choices)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(
         default=True,
         help_text='Designates whether this user should be treated as active. '
@@ -104,3 +111,58 @@ class PasswordResetRequest(BaseModel):
     otp = models.CharField(max_length=255, default="123456")
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True)
+
+
+class VendorProfile(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='vendor_profile')
+    business_name = models.CharField(max_length=255)
+    business_phone = models.CharField(max_length=255)
+    store_name = models.CharField(max_length=255)
+    bank_name = models.CharField(max_length=255)
+    account_number = models.CharField(max_length=255)
+    business_address = models.TextField(blank=True, null=True)
+    business_logo = CloudinaryField('business_logo', blank=True, null=True)
+    id_card = CloudinaryField('id_card', blank=True, null=True)
+    profile_photo = CloudinaryField('profile_photo', blank=True, null=True)
+    status = models.CharField(
+        max_length=50, choices=VendorStatus.choices, default=VendorStatus.pending
+    )
+    business_email = models.EmailField(max_length=254, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.business_name} - {self.user.email}"
+
+    def save(self, *args, **kwargs):
+
+        if kwargs.get("save_files"):
+            if self.business_logo and not str(self.business_logo).startswith("http"):
+                bl_upload = cloudinary.uploader.upload(
+                    self.business_logo,
+                    folder="business_logos",
+                    public_id=self.business_name.replace(" ", "_").lower(),
+                    overwrite=True,
+                    resource_type="image"
+                )
+                self.business_logo = bl_upload["public_id"]
+
+            if self.id_card and not str(self.id_card).startswith("http"):
+                id_upload = cloudinary.uploader.upload(
+                    self.id_card,
+                    folder="ID_cards",
+                    public_id=self.business_name.replace(" ", "_").lower(),
+                    overwrite=True,
+                    resource_type="image"
+                )
+                self.id_card = id_upload["public_id"]
+
+            if self.profile_photo and not str(self.profile_photo).startswith("http"):
+                pp_upload = cloudinary.uploader.upload(
+                    self.profile_photo,
+                    folder="profile_photo",
+                    public_id=self.business_name.replace(" ", "_").lower(),
+                    overwrite=True,
+                    resource_type="image"
+                )
+                self.profile_photo = pp_upload["public_id"]
+
+        super().save(*args, **kwargs)

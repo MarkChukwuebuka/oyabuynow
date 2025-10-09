@@ -28,9 +28,10 @@ class Order(BaseModel):
     lga = models.CharField(max_length=250, blank=True, null=True)
     phone = models.CharField(max_length=250, blank=True, null=True)
     paid = models.BooleanField(default=False)
+    refunded = models.BooleanField(default=False)
     total_cost = models.FloatField(default=0.0)
     status = models.CharField(max_length=25, choices=StatusChoices.choices, default=StatusChoices.ordered)
-    ref = models.CharField(max_length=250, null=True, blank=True)
+    ref = models.CharField(max_length=250, unique=True, blank=True, null=True)
 
     class Meta:
         ordering = ('-created_at',)

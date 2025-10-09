@@ -61,9 +61,9 @@ class CustomRequestUtil(CustomPermissionRequired):
         return user
 
     @property
-    def auth_profile(self):
+    def auth_vendor_profile(self):
         if self.auth_user:
-            return self.auth_user.user_profile
+            return self.auth_user.vendor_profile
         else:
             return None
 

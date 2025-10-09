@@ -2,7 +2,7 @@ from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
 from email_validator import validate_email
 
-from accounts.models import User
+from accounts.models import User, VendorProfile
 from services.util import CustomRequestUtil, compare_password
 
 
@@ -21,6 +21,8 @@ class UserService(CustomRequestUtil):
         password = payload.get("password")
         first_name = payload.get("first_name")
         last_name = payload.get("last_name")
+        phone = payload.get("phone")
+        address = payload.get("address")
 
         try:
             email_info = validate_email(email, check_deliverability=True)
@@ -37,6 +39,8 @@ class UserService(CustomRequestUtil):
             defaults=dict(
                 last_name=last_name,
                 first_name=first_name,
+                phone=phone,
+                address=address,
                 password=make_password(password)
             )
         )
@@ -47,7 +51,8 @@ class UserService(CustomRequestUtil):
         return user, None
 
     def find_user_by_email(self, email):
-        user = User.objects.prefetch_related("roles").filter(email__iexact=email).first()
+        user = User.objects.filter(email__iexact=email).first()
+        vendor = VendorProfile.objects.filter()
         if not user:
             return None, self.make_error(f"User with email '{email}' not found")
 
@@ -58,12 +63,13 @@ class UserService(CustomRequestUtil):
         user.first_name = payload.get('first_name', user.first_name)
         user.last_name = payload.get('last_name', user.last_name)
         user.phone_number = payload.get('phone', user.phone_number)
+        user.save()
 
         current_password = payload.get('current_password')
         new_password = payload.get('new_password')
         confirm_password = payload.get('confirm_password')
 
-        if current_password:
+        if current_password and new_password:
 
             if new_password != confirm_password:
                 return None, self.make_error("Password Mismatch")

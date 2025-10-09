@@ -140,7 +140,7 @@ class CreateListOrderView(View, CustomRequestUtil):
     }
 
     def get(self, request, *args, **kwargs):
-        self.template_name = "orders.html"
+        self.template_name = "backend/order-list.html"
         self.context_object_name = 'orders'
 
         order_service = OrderService(self.request)
@@ -151,23 +151,17 @@ class CreateListOrderView(View, CustomRequestUtil):
 
 
 
-# Create your views here.
-class RetrieveUpdateDeleteOrderView(View):
-    def get(self, request, ref):
+class RetrieveUpdateDeleteOrderView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Order Details"
+    }
 
-        product_service = ProductService(request)
+    def get(self, request, *args, **kwargs):
+        self.template_name = "backend/order-details.html"
+        self.context_object_name = 'order'
 
-        products_with_annotations = product_service.get_base_query()
+        order_service = OrderService(self.request)
 
-        order = Order.objects.prefetch_related(
-            Prefetch(
-                'items__product',
-                queryset=products_with_annotations
-            )
-        ).filter(ref=ref).first()
-
-        context = {
-            'order': order,
-            'title': "Order Details",
-        }
-        return render(request, "order-details.html", context)
+        return self.process_request(
+            request, target_function=order_service.fetch_single, ref=kwargs.get("ref")
+        )
