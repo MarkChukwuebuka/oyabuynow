@@ -1,8 +1,10 @@
 import random
 import string
+from functools import wraps
 from typing import Union, TypeVar
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import AnonymousUser
@@ -13,6 +15,8 @@ import phonenumbers
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.timezone import is_aware, make_aware
+
+from accounts.models import UserTypes
 
 T = TypeVar("T")
 
@@ -194,3 +198,72 @@ def check_otp_time_expired(expires_at):
 
 def compare_password(input_password, hashed_password):
     return check_password(input_password, hashed_password)
+
+
+
+def vendor_required(view_func):
+    """
+    Works for both function-based and class-based views.
+    Restricts access to only users with user_type == vendor.
+    Redirects others to appropriate dashboards.
+    """
+    @wraps(view_func)
+    def _wrapped_view(*args, **kwargs):
+        # Determine if this is a CBV or FBV
+        if hasattr(args[0], 'request'):
+            # Class-based view → first arg is 'self'
+            self = args[0]
+            request = self.request
+        else:
+            # Function-based view → first arg is 'request'
+            request = args[0]
+
+        user = request.user
+
+        if not user.is_authenticated:
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(request.get_full_path())
+
+        if getattr(user, "user_type", None) == UserTypes.vendor:
+            return view_func(*args, **kwargs)
+
+        if user.user_type == UserTypes.admin:
+            return redirect("admin")
+
+        return redirect("dashboard")
+
+    return _wrapped_view
+
+
+def customer_required(view_func):
+    """
+    Works for both function-based and class-based views.
+    Restricts access to only users with user_type == customer.
+    Redirects others to appropriate dashboards.
+    """
+    @wraps(view_func)
+    def _wrapped_view(*args, **kwargs):
+        # Determine if this is a CBV or FBV
+        if hasattr(args[0], 'request'):
+            # Class-based view → first arg is 'self'
+            self = args[0]
+            request = self.request
+        else:
+            # Function-based view → first arg is 'request'
+            request = args[0]
+
+        user = request.user
+
+        if not user.is_authenticated:
+            from django.contrib.auth.views import redirect_to_login
+            return redirect_to_login(request.get_full_path())
+
+        if getattr(user, "user_type", None) == UserTypes.customer:
+            return view_func(*args, **kwargs)
+
+        if user.user_type == UserTypes.admin:
+            return redirect("admin")
+
+        return redirect("vendor-dashboard")
+
+    return _wrapped_view

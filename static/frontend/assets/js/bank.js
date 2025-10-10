@@ -1,28 +1,28 @@
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     const bankSelect = document.getElementById("bank");
+    const bankNameInput = document.getElementById("bank_name");
 
-    try {
-        const response = await fetch("/api/get-banks/");
-        const data = await response.json();
+    // Load bank list dynamically
+    const response = await fetch("/api/get-banks/");
+    const data = await response.json();
 
-        if (data.status) {
-            // Clear existing options
-            bankSelect.innerHTML = '<option value="">Select Bank</option>';
-
-            // Populate dynamically
-            data.banks.forEach(bank => {
-                const option = document.createElement("option");
-                option.value = bank.code;
-                option.textContent = bank.name;
-                bankSelect.appendChild(option);
-            });
-        } else {
-            bankSelect.innerHTML = '<option value="">Error loading banks</option>';
-        }
-    } catch (err) {
-        console.error("Error fetching banks:", err);
-        bankSelect.innerHTML = '<option value="">Error loading banks</option>';
+    if (data.status) {
+        bankSelect.innerHTML = '<option value="">Select Bank</option>';
+        data.banks.forEach(bank => {
+            const option = document.createElement("option");
+            option.value = bank.code;
+            option.textContent = bank.name;
+            bankSelect.appendChild(option);
+        });
     }
+
+    // When a user selects a bank, store its name in the hidden field
+    bankSelect.addEventListener("change", function () {
+        const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+        bankNameInput.value = selectedOption.text; // Bank name
+    });
 });
 
 
@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", function () {
     async function verifyAccount() {
         const bankCode = bankSelect.value;
         const accountNumber = accountInput.value;
+
+
 
         // Only run when both are filled and account number is 10 digits
         if (bankCode && accountNumber.length === 10) {

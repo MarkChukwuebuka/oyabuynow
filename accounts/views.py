@@ -8,10 +8,11 @@ from django.views import View
 from accounts.models import User
 from accounts.services.auth_service import AuthService
 from accounts.services.user_service import UserService
+from accounts.services.vendor_service import VendorService
 from payments.models import Order, Payment
 from payments.services.order_service import OrderService
 from products.services.wishlist_service import WishlistService
-from services.util import CustomRequestUtil
+from services.util import CustomRequestUtil, vendor_required, customer_required
 
 
 class UserLoginView(View, CustomRequestUtil):
@@ -98,9 +99,9 @@ class UserDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
     extra_context_data = {
         "title": "Dashboard",
-
     }
 
+    @customer_required
     def get(self, request, *args, **kwargs):
         completed_orders = Payment.objects.filter(user=self.auth_user, verified=True).count() or 0
         pending_orders = Order.objects.filter(user=self.auth_user, paid=False).count() or 0
@@ -129,6 +130,7 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
     }
 
+    @vendor_required
     def get(self, request, *args, **kwargs):
         completed_orders = Payment.objects.filter(user=self.auth_user, verified=True).count() or 0
         pending_orders = Order.objects.filter(user=self.auth_user, paid=False).count() or 0
@@ -177,7 +179,7 @@ class UpdateUserView(LoginRequiredMixin, View, CustomRequestUtil):
             request, target_view="dashboard", target_function=user_service.update_single, payload=payload
         )
 
-class OnboardVendorView(LoginRequiredMixin, View, CustomRequestUtil):
+class OnboardVendorView(View, CustomRequestUtil):
     template_name = 'frontend/onboard-vendor.html'
     extra_context_data = {
         "title": "Become a Vendor",
@@ -187,7 +189,7 @@ class OnboardVendorView(LoginRequiredMixin, View, CustomRequestUtil):
         return self.process_request(request)
 
     def post(self, request, *args, **kwargs):
-        user_service = UserService(self.request)
+        vendor_service = VendorService(self.request)
         self.template_name = None
         self.template_on_error = 'frontend/onboard-vendor.html'
 
@@ -212,7 +214,7 @@ class OnboardVendorView(LoginRequiredMixin, View, CustomRequestUtil):
             payload['password'] = request.POST.get('password')
 
         return self.process_request(
-            request, target_view="home", target_function=user_service.update_single, payload=payload
+            request, target_view="home", target_function=vendor_service.create_single, payload=payload
         )
 
 
@@ -242,8 +244,6 @@ def verify_bank_account(request):
 
     if not account_number or not bank_code:
         return JsonResponse({"status": False, "message": "Missing parameters"}, status=400)
-
-    print(account_number)
 
     url = f"https://api.paystack.co/bank/resolve?account_number={account_number}&bank_code={bank_code}"
 

@@ -3,7 +3,8 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Q
 from email_validator import validate_email
 
-from accounts.models import User, VendorProfile
+from accounts.models import User, VendorProfile, VendorStatus, UserTypes
+from accounts.services.user_service import UserService
 from services.util import CustomRequestUtil, compare_password
 
 
@@ -22,6 +23,7 @@ class VendorService(CustomRequestUtil):
         business_logo = payload.get("business_logo")
         business_email = payload.get("business_email")
         business_address = payload.get("business_address")
+        business_phone = payload.get("business_phone")
 
         try:
             business_email_info = validate_email(business_email, check_deliverability=True)
@@ -46,9 +48,10 @@ class VendorService(CustomRequestUtil):
             except Exception as e:
                 return None, self.make_error("Please enter a valid email address")
 
-            existing_user, _ = self.find_user_by_email(email)
-            if existing_user:
-                return None, self.make_error("User with email already exist")
+            # user_service = UserService(self.request)
+            # existing_user, _ = user_service.find_user_by_email(email)
+            # if existing_user:
+            #     return None, self.make_error("User with email already exist")
 
             user, is_created = User.available_objects.get_or_create(
                 email=email,
@@ -70,17 +73,23 @@ class VendorService(CustomRequestUtil):
                 bank_name=bank_name,
                 account_number=account_number,
                 business_email=business_email,
+                business_phone=business_phone,
                 business_address=business_address
             )
         )
 
         if not is_vp_created:
+
             return None, self.make_error("Vendor profile already exists for this user")
 
+        vp.status = VendorStatus.pending
         vp.id_card = id_card
         vp.profile_photo = profile_photo
         vp.business_logo = business_logo
         vp.save(save_files=True)
+
+        user.user_type = UserTypes.vendor
+        user.save()
 
         message = "Vendor application request has been submitted successfully. An email will be sent to you with an update"
 

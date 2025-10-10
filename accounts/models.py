@@ -115,11 +115,11 @@ class PasswordResetRequest(BaseModel):
 
 class VendorProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='vendor_profile')
-    business_name = models.CharField(max_length=255)
-    business_phone = models.CharField(max_length=255)
-    store_name = models.CharField(max_length=255)
-    bank_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=255)
+    business_name = models.CharField(max_length=255, null=True, blank=True)
+    business_phone = models.CharField(max_length=255, null=True, blank=True)
+    store_name = models.CharField(max_length=255, null=True, blank=True)
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    account_number = models.CharField(max_length=255, null=True, blank=True)
     business_address = models.TextField(blank=True, null=True)
     business_logo = CloudinaryField('business_logo', blank=True, null=True)
     id_card = CloudinaryField('id_card', blank=True, null=True)
@@ -133,36 +133,43 @@ class VendorProfile(BaseModel):
         return f"{self.business_name} - {self.user.email}"
 
     def save(self, *args, **kwargs):
+        save_files = kwargs.pop("save_files", False)
+        upload_fields = ["business_logo", "id_card", "profile_photo"]
 
-        if kwargs.get("save_files"):
-            if self.business_logo and not str(self.business_logo).startswith("http"):
-                bl_upload = cloudinary.uploader.upload(
-                    self.business_logo,
-                    folder="business_logos",
-                    public_id=self.business_name.replace(" ", "_").lower(),
-                    overwrite=True,
-                    resource_type="image"
-                )
-                self.business_logo = bl_upload["public_id"]
+        if save_files:
+            if self.pk:  # updating
+                old = type(self).objects.filter(pk=self.pk).first()
+            else:
+                old = None
 
-            if self.id_card and not str(self.id_card).startswith("http"):
-                id_upload = cloudinary.uploader.upload(
-                    self.id_card,
-                    folder="ID_cards",
-                    public_id=self.business_name.replace(" ", "_").lower(),
-                    overwrite=True,
-                    resource_type="image"
-                )
-                self.id_card = id_upload["public_id"]
+            for field in upload_fields:
+                file_field = getattr(self, field)
+                old_value = getattr(old, field) if old else None
 
-            if self.profile_photo and not str(self.profile_photo).startswith("http"):
-                pp_upload = cloudinary.uploader.upload(
-                    self.profile_photo,
-                    folder="profile_photo",
-                    public_id=self.business_name.replace(" ", "_").lower(),
-                    overwrite=True,
-                    resource_type="image"
-                )
-                self.profile_photo = pp_upload["public_id"]
+                if file_field and (not old_value or str(file_field) != str(old_value)):
+                    upload = cloudinary.uploader.upload(
+                        file_field,
+                        folder=field,
+                        public_id=self.business_name.replace(" ", "_").lower(),
+                        overwrite=True,
+                        resource_type="image"
+                    )
+                    setattr(self, field, upload["public_id"])
+
+        if self.pk:
+            old_vendor = VendorProfile.objects.get(pk=self.pk)
+            if old_vendor.status != self.status and self.status == VendorStatus.approved:
+                self.user.user_type = UserTypes.vendor
+                self.user.save()
+        #         TODO: send email notification for approval
+                pass
+
+            if old_vendor.status != self.status and self.status == VendorStatus.rejected:
+                self.user.user_type = UserTypes.customer
+                self.user.save()
+        #         TODO: send email notification for rejection
+                pass
+
 
         super().save(*args, **kwargs)
+
