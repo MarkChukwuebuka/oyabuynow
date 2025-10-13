@@ -12,17 +12,17 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(BaseAdmin):
     list_display = [
-        "user", "email", "total_cost", "paid", "status"
+        "user", "email", "total_cost", "paid", "overall_status"
     ]
     search_fields = ["address", "email", "state", "first_name", "ref"]
-    list_filter = ["status", "paid"]
+    list_filter = ["overall_status", "paid"]
 
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(BaseAdmin):
     list_display = [
-        "order", "product", "quantity", "price"
+        "order", "product", "quantity", "price", "status"
     ]
     search_fields = ["price",]
     list_filter = ["product"]

@@ -14,7 +14,7 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
 
 
-class ProductCreateSerializer(serializers.Serializer):
+class CreateProductSerializer(serializers.Serializer):
 
     name = serializers.CharField(required=True)
     price = serializers.DecimalField(max_digits=15, decimal_places=2, required=True)
@@ -22,11 +22,12 @@ class ProductCreateSerializer(serializers.Serializer):
     description = serializers.CharField(required=False, allow_null=True)
     cost_price = serializers.IntegerField(required=False, allow_null=True)
     stock = serializers.IntegerField(required=False, allow_null=True)
-    weight = serializers.DecimalField(max_digits=10, required=False, allow_null=True)
+    weight = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
     dimensions = serializers.CharField(required=False, allow_null=True)
     brand_id = serializers.IntegerField(required=False, allow_null=True)
     category_id = serializers.IntegerField(required=False, allow_null=True)
     free_shipping = serializers.BooleanField(required=False, default=False)
+    short_description = serializers.CharField(required=False, allow_null=True)
     tag_ids = serializers.ListSerializer(
         child=serializers.IntegerField(), required=False, allow_empty=True
     )
@@ -35,6 +36,11 @@ class ProductCreateSerializer(serializers.Serializer):
     )
     subcategory_ids = serializers.ListSerializer(
         child=serializers.IntegerField(), required=False, allow_empty=True
+    )
+    media = serializers.ListField(
+        child=serializers.FileField(),
+        required=False,
+        allow_empty=True
     )
 
     def validate(self, attrs):

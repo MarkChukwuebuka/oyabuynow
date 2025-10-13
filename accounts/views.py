@@ -1,7 +1,7 @@
 import requests
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.http import JsonResponse
 from django.views import View
 
@@ -9,8 +9,10 @@ from accounts.models import User
 from accounts.services.auth_service import AuthService
 from accounts.services.user_service import UserService
 from accounts.services.vendor_service import VendorService
-from payments.models import Order, Payment
-from payments.services.order_service import OrderService
+from payments.models import Order, Payment, OrderItem, OrderStatusChoices
+from payments.services.order_service import OrderService, OrderItemService
+from products.models import Product
+from products.services.product_service import ProductService
 from products.services.wishlist_service import WishlistService
 from services.util import CustomRequestUtil, vendor_required, customer_required
 
@@ -123,31 +125,73 @@ class UserDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
 
 class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
-    template_name = 'backend/vendor-dashboard.html'
+    template_name = 'frontend/vendor-dashboard.html'
+    context_object_name = 'vendor'
 
     extra_context_data = {
         "title": "Dashboard",
-
     }
 
     @vendor_required
     def get(self, request, *args, **kwargs):
-        completed_orders = Payment.objects.filter(user=self.auth_user, verified=True).count() or 0
-        pending_orders = Order.objects.filter(user=self.auth_user, paid=False).count() or 0
-        orders_count = Order.objects.filter(user=self.auth_user).count() or 0
-        total_spent = Order.objects.filter(user=self.auth_user, refunded=False).aggregate(
-            total_spent=Sum("total_cost")
-        )["total_spent"] or 0
-        wishlist_products = WishlistService(request).fetch_list()
-        orders = OrderService(request).fetch_list()
+        vendor_service = VendorService(self.request)
+        order_service = OrderItemService(request)
+        product_service = ProductService(request)
 
-        self.extra_context_data["completed_orders"] = completed_orders
-        self.extra_context_data["orders_count"] = orders_count
+        total_orders = Order.objects.filter(items__product__created_by=self.auth_user).distinct().count()
+        delivered_orders = OrderItem.objects.filter(
+            product__created_by=self.auth_user, status=OrderStatusChoices.delivered, order__paid=True
+        ).count() or 0
+        shipped_orders = OrderItem.objects.filter(
+            product__created_by=self.auth_user, status=OrderStatusChoices.shipped, order__paid=True
+        ).count() or 0
+        pending_orders = OrderItem.objects.filter(
+            product__created_by=self.auth_user, status=OrderStatusChoices.ordered, order__paid=True
+        ).count() or 0
+
+        total_products = Product.available_objects.filter(created_by=self.auth_user).count() or 0
+
+        total_sales = OrderItem.objects.filter(
+            product__created_by=self.auth_user, order__paid=True
+        ).aggregate(
+            total=Sum("price")
+        )["total"] or 0
+
+        latest_order_items = order_service.fetch_list()[:5]
+        trending_products = product_service.fetch_list(user=self.auth_user).order_by('-views')[:5]
+        vendor_products = product_service.fetch_list(user=self.auth_user, paginate=True)
+        order_items = order_service.fetch_list(paginate=True)
+
+        self.extra_context_data["vendor_products"] = vendor_products
+        self.extra_context_data["order_items"] = order_items
+        self.extra_context_data["shipped_orders"] = shipped_orders
+        self.extra_context_data["delivered_orders"] = delivered_orders
+        self.extra_context_data["trending_products"] = trending_products
+        self.extra_context_data["total_orders"] = total_orders
         self.extra_context_data["pending_orders"] = pending_orders
-        self.extra_context_data["total_spent"] = total_spent
-        self.extra_context_data["orders"] = orders
+        self.extra_context_data["latest_order_items"] = latest_order_items
+        self.extra_context_data["total_sales"] = total_sales
+        self.extra_context_data["total_products"] = total_products
 
-        return self.process_request(request)
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
+
+
+    def post(self, request, *args, **kwargs):
+        self.template_name = None
+        self.template_on_error = 'frontend/vendor-dashboard.html'
+        vendor_service = VendorService(self.request)
+
+        payload = {
+            'bank_name': request.POST.get('bank_name'),
+            'account_number': request.POST.get('account_number'),
+            'business_phone': request.POST.get('business_phone'),
+            'store_name': request.POST.get('store_name'),
+            'business_email': request.POST.get('business_email'),
+        }
+
+        return self.process_request(
+            request, target_view="vendor-dashboard", target_function=vendor_service.update_single, payload=payload
+        )
 
 
 

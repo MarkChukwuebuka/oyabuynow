@@ -104,6 +104,7 @@ def check_out(request):
                 price=item_cost,
                 quantity=quantity_in_cart
             )
+        #     TODO: update quantity sold
 
         payment = Payment.objects.create(
             amount=total_cost,

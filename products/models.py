@@ -1,11 +1,14 @@
+import uuid
+
 import cloudinary
 from cloudinary.models import CloudinaryField
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 
 from accounts.models import User
 from crm.models import BaseModel, Color
-from products.services.product_service import generate_sku, generate_unique_slug
+from products.services.product_service import generate_sku
 
 
 class Availability(models.TextChoices):
@@ -103,9 +106,11 @@ class Product(BaseModel):
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     rating = models.PositiveIntegerField(null=True, blank=True)
     dimensions = models.CharField(max_length=100, blank=True, null=True)
+    sizes = models.CharField(max_length=100, blank=True, null=True)
     free_shipping = models.BooleanField(default=False)
 
     views = models.PositiveIntegerField(default=0)
+    quantity_sold = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -119,8 +124,14 @@ class Product(BaseModel):
         if not self.sku and self.name:
             self.sku = generate_sku(self.name)
 
-        if not self.slug:
-            self.slug = generate_unique_slug(self, self.name)
+        if self.pk:
+            old_name = Product.objects.filter(pk=self.pk).values_list("name", flat=True).first()
+        else:
+            old_name = None
+
+        if not self.slug or (old_name and old_name != self.name):
+            unique_id = str(uuid.uuid4())[:8]
+            self.slug = f"{slugify(self.name)}-{unique_id}"
 
         super().save(*args, **kwargs)
 

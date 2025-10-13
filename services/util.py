@@ -90,7 +90,7 @@ class CustomRequestUtil(CustomPermissionRequired):
             self.log_error(error)
         return message
 
-    def process_request(self, request, target_view=None, target_function=None, **extra_args):
+    def process_request(self, request, target_view=None, errors=None, target_function=None, **extra_args):
 
         if not self.context:
             self.context = dict()
@@ -107,6 +107,10 @@ class CustomRequestUtil(CustomPermissionRequired):
         if self.extra_context_data:
             for key, val in self.extra_context_data.items():
                 self.context[key] = val
+
+        if errors:
+            self.context['form_errors'] = errors
+            return render(request, self.template_on_error, self.context)
 
         response_raw_data = None
 

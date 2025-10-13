@@ -6,8 +6,8 @@ from media.models import Upload
 class UploadInline(admin.TabularInline):  # you can also use StackedInline
     model = Upload
     extra = 1  # how many empty forms to show
-    fields = ["image", "user"]
-    readonly_fields = ["user"]
+    fields = ["image", "created_by"]
+    readonly_fields = ["created_by"]
 
     def save_new_instance(self, form, commit=True):
         """

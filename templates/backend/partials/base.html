@@ -185,51 +185,13 @@
                             <ul class="sidebar-links" id="simple-bar">
                                 <li class="back-btn"></li>
 
+                                {% if user.user_type == "Customer" %}
                                 <li class="sidebar-list">
                                     <a class="sidebar-link sidebar-title link-nav" href="{% url 'dashboard' %}">
                                         <i class="ri-home-line"></i>
                                         <span>Dashboard</span>
                                     </a>
                                 </li>
-
-
-                                {% if user.user_type == "Vendor" %}
-                                <li class="sidebar-list">
-                                    <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                        <i class="ri-store-3-line"></i>
-                                        <span>Product</span>
-                                    </a>
-                                    <ul class="sidebar-submenu">
-                                        <li>
-                                            <a href="products.html">Prodcts</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="add-new-product.html">Add New Products</a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-
-
-                                <li class="sidebar-list">
-                                    <a class="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                        <i class="ri-list-check-2"></i>
-                                        <span>Category</span>
-                                    </a>
-                                    <ul class="sidebar-submenu">
-                                        <li>
-                                            <a href="category.html">Category List</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="add-new-category.html">Add New Category</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                                {% endif %}
-
-
 
                                 <li class="sidebar-list">
                                     <a class="sidebar-link sidebar-title link-nav" href="{% url 'orders' %}">
@@ -239,17 +201,6 @@
                                 </li>
 
 
-                                {% if user.user_type == "Vendor" %}
-                                <li class="sidebar-list">
-                                    <a class="sidebar-link sidebar-title link-nav" href="product-review.html">
-                                        <i class="ri-star-line"></i>
-                                        <span>Product Review</span>
-                                    </a>
-                                </li>
-                                {% endif %}
-
-
-
                                 <li class="sidebar-list">
                                     <a class="sidebar-link sidebar-title link-nav" href="{% url 'settings' %}">
                                         <i class="ri-settings-line"></i>
@@ -257,13 +208,33 @@
                                     </a>
                                 </li>
 
-                                {% if user.user_type == 'Vendor' %}
+                                {% endif %}
+
+                                {% if user.user_type == "Vendor" %}
                                 <li class="sidebar-list">
-                                    <a class="sidebar-link sidebar-title link-nav" href="reports.html">
-                                        <i class="ri-file-chart-line"></i>
-                                        <span>Reports</span>
+                                    <a class="sidebar-link sidebar-title link-nav" href="{% url 'add-product' %}">
+                                        <i class="ri-store-3-line"></i>
+                                        <span>Add New Product</span>
                                     </a>
                                 </li>
+
+<!--                                <li class="sidebar-list">-->
+<!--                                    <a class="sidebar-link sidebar-title link-nav" href="{% url 'add-category' %}">-->
+<!--                                        <i class="ri-list-check-2"></i>-->
+
+<!--                                        <span>Add New Category</span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
+
+
+                                <li class="sidebar-list">
+                                    <a class="sidebar-link sidebar-title link-nav" href="product-review.html">
+                                        <i class="ri-star-line"></i>
+                                        <span>Product Review</span>
+                                    </a>
+                                </li>
+
+
                                 {% endif %}
 
 
@@ -500,6 +471,25 @@
 
 
     {% include '../../frontend/partials/messages.html' %}
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+
+    <script>
+        ClassicEditor
+          .create(document.querySelector('#product-description'), {
+            toolbar: [
+              'heading', '|',
+              'bold', 'italic', 'underline', '|',
+              'bulletedList', 'numberedList', '|',
+              'link', 'blockQuote', 'undo', 'redo'
+            ]
+          })
+          .catch(error => {
+            console.error(error);
+          });
+    </script>
+
+
 </body>
 
 

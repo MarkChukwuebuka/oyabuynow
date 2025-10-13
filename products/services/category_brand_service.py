@@ -1,4 +1,5 @@
 from django.db.models import Q
+from pyexpat.errors import messages
 
 from crm.models import Color
 from products.models import Category, Brand, Subcategory, Tag
@@ -12,19 +13,23 @@ class CategoryService(CustomRequestUtil):
     def create_single(self, payload):
 
         name = payload.get("name")
+        cover_image = payload.get("cover_image")
 
         category, is_created = Category.objects.get_or_create(
             name__iexact=name,
             defaults=dict(
-                name=name
+                name=name,
+                cover_image=cover_image,
+
             )
         )
 
         if not is_created:
             return None, self.make_error("There was an error creating the Category")
 
+        message = "Category was created successfully"
 
-        return category, None
+        return message, None
 
     def fetch_list(self, filter_params=None):
         q = Q()
@@ -197,3 +202,5 @@ class BrandService(CustomRequestUtil):
             return None, self.make_error("Brand does not exist")
 
         return brand, None
+
+

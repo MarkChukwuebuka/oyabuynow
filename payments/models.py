@@ -11,7 +11,7 @@ import secrets
 from services.util import send_email
 
 
-class StatusChoices(models.TextChoices):
+class OrderStatusChoices(models.TextChoices):
     ordered = 'Ordered'
     shipped = 'Shipped'
     delivered = 'Delivered'
@@ -30,8 +30,12 @@ class Order(BaseModel):
     paid = models.BooleanField(default=False)
     refunded = models.BooleanField(default=False)
     total_cost = models.FloatField(default=0.0)
-    status = models.CharField(max_length=25, choices=StatusChoices.choices, default=StatusChoices.ordered)
     ref = models.CharField(max_length=250, unique=True, blank=True, null=True)
+    overall_status = models.CharField(
+        max_length=25,
+        choices=OrderStatusChoices.choices,
+        default=OrderStatusChoices.ordered
+    )
 
     class Meta:
         ordering = ('-created_at',)
@@ -39,19 +43,6 @@ class Order(BaseModel):
     def __str__(self):
         return f'{self.user}'
 
-    def save(self, *args, **kwargs):
-        if self.pk is not None:
-            old_order = Order.objects.get(pk=self.pk)
-            # Check if the status has changed to "shipped"
-            context = {
-                'name': self.first_name,
-                'ref': self.ref,
-                'amount': self.total_cost
-            }
-            if old_order.status != self.status and self.status == StatusChoices.shipped:
-                send_email('emails/order-shipped.html', context, 'Order Shipped', self.email)
-
-        super().save(*args, **kwargs)
 
 
 
@@ -60,9 +51,33 @@ class OrderItem(BaseModel):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
     price = models.IntegerField(null=True)
     quantity = models.IntegerField(default=1)
+    status = models.CharField(max_length=25, choices=OrderStatusChoices.choices, default=OrderStatusChoices.ordered)
+
+
 
     def __str__(self):
         return f'{self.order} - {self.product}'
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            old_order = OrderItem.objects.get(pk=self.pk)
+            # Check if the status has changed to "shipped"
+            context = {
+                'name': self.order.first_name,
+                'ref': self.order.ref,
+
+            }
+            if old_order.status != self.status and self.status == OrderStatusChoices.shipped:
+                self.order.update_overall_status()
+                pass
+                # send_email('emails/order-shipped.html', context, 'Order Shipped', self.email)
+
+            if old_order.status != self.status and self.status == OrderStatusChoices.delivered:
+                self.order.update_overall_status()
+                pass
+                # send_email('emails/order-shipped.html', context, 'Order Shipped', self.email)
+
+        super().save(*args, **kwargs)
 
 
 

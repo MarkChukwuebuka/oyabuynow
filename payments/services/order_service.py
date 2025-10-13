@@ -2,9 +2,11 @@ import random
 import string
 from datetime import datetime
 
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.utils import timezone
 
-from payments.models import Order
+from payments.models import Order, OrderItem
 from services.util import CustomRequestUtil
 
 
@@ -52,8 +54,56 @@ class OrderService(CustomRequestUtil):
         return self.get_base_query().filter(user=self.auth_user)
 
     def get_base_query(self):
-        qs = Order.objects.select_related("user").prefetch_related("items__product")
+        qs = Order.objects.select_related("user").prefetch_related("items")
 
+        return qs
+
+    def fetch_single(self, ref):
+        order = self.get_base_query().filter(ref=ref).first()
+        if not order:
+            return None, self.make_error("Order does not exist")
+
+        return order, None
+
+
+
+class OrderItemService(CustomRequestUtil):
+
+    def create_single(self, payload):
+
+        order = OrderItem.objects.create(
+            order=payload.get("order"),
+            product=payload.get("product"),
+            price=payload.get("price"),
+            quantity=payload.get("state"),
+        )
+
+        return order, None
+
+    def fetch_list(self, paginate=False):
+        q = Q()
+
+        order_items = self.get_base_query().filter(q).order_by('-created_at').distinct()
+
+        if paginate:
+            paginator = Paginator(order_items, 25)  # 25 items per page
+
+            # get the current page number from request
+            page_number = self.request.GET.get("page", 1)
+            page_obj = paginator.get_page(page_number)
+
+            return page_obj
+
+        return order_items
+
+    def get_base_query(self):
+        q = Q()
+        if self.auth_vendor_profile:
+            q &= Q(product__created_by=self.auth_user)
+        if self.auth_user and not self.auth_vendor_profile:
+            q &= Q(order__user=self.auth_user)
+
+        qs = OrderItem.objects.select_related("product", "order")
         return qs
 
     def fetch_single(self, ref):

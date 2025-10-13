@@ -64,7 +64,6 @@ def update_cart(request):
 @csrf_exempt
 def remove_from_cart(request):
     cart_service = CartService(request)
-    print("yesssssssssssssssssssssss")
 
     if request.method == "POST":
         data = json.loads(request.body)

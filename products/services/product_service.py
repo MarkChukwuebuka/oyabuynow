@@ -1,11 +1,11 @@
 import random
 import string
-
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Case, When, ExpressionWrapper, DecimalField, F, Q, Avg
-from django.utils.text import slugify
+from django.utils import timezone
 
+from media.models import Upload
 from services.util import CustomRequestUtil
 
 
@@ -19,27 +19,6 @@ def generate_sku(product_name):
     return sku
 
 
-def generate_unique_slug(instance, field_value, slug_field_name='slug'):
-    """
-    Generates a unique slug for a Django model instance.
-
-    :param instance: The model instance to generate the slug for
-    :param field_value: The text (usually product name) to base the slug on
-    :param slug_field_name: The field name where the slug is stored
-    :return: A unique slug string
-    """
-    slug = slugify(field_value)
-    model_class = instance.__class__
-    unique_slug = slug
-    num = 1
-
-    # Keep generating until it's unique
-    while model_class.objects.filter(**{slug_field_name: unique_slug}).exists():
-        unique_slug = f"{slug}-{num}"
-        num += 1
-
-    return unique_slug
-
 
 class ProductService(CustomRequestUtil):
 
@@ -48,42 +27,77 @@ class ProductService(CustomRequestUtil):
 
         name = payload.get("name")
         price = payload.get("price")
-        percentage_discount = payload.get("percentage_discount")
-        short_description = payload.get("short_description")
-        description = payload.get("description")
-        stock = payload.get("stock")
-        cost_price = payload.get("cost_price")
-        weight = payload.get("weight")
-        dimensions = payload.get("dimensions")
-        brand = payload.get("brand")
+        percentage_discount = payload.get("percentage_discount") or None
+        short_description = payload.get("short_description") or None
+        description = payload.get("description") or None
+        stock = payload.get("stock") or None
+        weight = payload.get("weight") or None
+        dimensions = payload.get("dimensions") or None
+        sizes = payload.get("sizes") or None
+        brand = payload.get("brand") or None
+        add_product_to_sales = payload.get("add_product_to_sales") or False
+        sale_start = payload.get("sale_start") or None
+        sale_end = payload.get("sale_end") or None
+        colors = payload.get("colors")
+        tags = payload.get("tags")
+        category = payload.get("category")
+        subcategories = payload.get("subcategories")
+        media = payload.get("media", [])
 
-        product, is_created = Product.objects.create(
-            name=name,
-            price=price,
-            percentage_discount=percentage_discount,
-            sku=generate_sku(name),
-            description=description,
-            stock=stock,
-            cost_price=cost_price,
-            weight=weight,
-            brand=brand,
-            dimensions=dimensions,
-            slug=generate_unique_slug(Product, name),
-            created_by=self.auth_user
+
+        product, is_created = Product.available_objects.get_or_create(
+            sku__iexact=generate_sku(name),
+            defaults=dict(
+                name=name,
+                price=price,
+                percentage_discount=percentage_discount,
+                sku=generate_sku(name),
+                description=description,
+                short_description=short_description,
+                stock=stock,
+                add_product_to_sales=add_product_to_sales,
+                sale_end=sale_end,
+                sale_start=sale_start,
+                sizes=sizes,
+                category=category,
+                weight=weight,
+                brand=brand,
+                dimensions=dimensions,
+                created_by=self.auth_user
+            )
         )
-
         if not is_created:
             return None, self.make_error("There was an error creating the product")
 
-        return product, None
 
-    def fetch_list(self, category=None, subcategory=None, paginate=False):
+        if colors:
+            product.colors.set(colors)
+        if tags:
+            product.tags.set(tags)
+        if subcategories:
+            product.sub_categories.set(subcategories)
+
+        for img in media:
+            Upload.objects.create(
+                image=img,
+                product=product,
+                created_by=self.auth_user
+            )
+
+        message = "Product was created successfully"
+
+        return message, None
+
+    def fetch_list(self, user=None, category=None, subcategory=None, paginate=False):
         q = Q()
         if category:
             q &= Q(category__name__iexact=category)
 
         if subcategory:
             q &= Q(sub_categories__name__iexact=subcategory)
+
+        if user:
+            q &= Q(created_by=user)
 
         products = self.get_base_query().filter(q).distinct()
 
@@ -105,6 +119,13 @@ class ProductService(CustomRequestUtil):
 
         return None
 
+    def update_quantity_sold(self, product, quantity=1):
+        product.quantity_sold += quantity
+        product.save(update_fields=["quantity_sold"])
+        product.refresh_from_db()
+
+        return None
+
     def get_related_products(self, product_id, limit=5):
         product, _ = self.fetch_single(product_id)
 
@@ -116,7 +137,7 @@ class ProductService(CustomRequestUtil):
 
     def get_base_query(self):
         from products.models import Product
-        qs = Product.objects.prefetch_related(
+        qs = Product.available_objects.prefetch_related(
             "tags", "colors", "sub_categories", "product_media"
         ).select_related(
             "category", "brand"
@@ -147,6 +168,23 @@ class ProductService(CustomRequestUtil):
             return None, self.make_error("Product does not exist")
 
         return product, None
+
+
+    def delete_single(self, product_id):
+        product = self.get_base_query().filter(id=product_id).first()
+        if not product:
+            return None, self.make_error("Product does not exist")
+
+        if product.created_by != self.auth_user:
+            return None, "Invalid Action"
+
+        product.deleted_at = timezone.now()
+        product.deleted_by = self.auth_user
+        product.save()
+
+        message = "Product was deleted successfully"
+
+        return message, None
 
     def fetch_single_by_slug(self, product_slug):
         product = self.get_base_query().filter(slug=product_slug).first()

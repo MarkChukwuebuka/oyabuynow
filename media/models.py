@@ -10,9 +10,6 @@ class Upload(BaseModel):
     product = models.ForeignKey(
         "products.Product", null=True, blank=True, on_delete=models.SET_NULL, related_name="product_media"
     )
-    user = models.ForeignKey(
-        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="product_media"
-    )
 
     class Meta:
         ordering = ["-created_at"]

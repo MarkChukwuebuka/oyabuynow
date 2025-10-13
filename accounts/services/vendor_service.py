@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
+from django.utils import timezone
 from email_validator import validate_email
 
 from accounts.models import User, VendorProfile, VendorStatus, UserTypes
@@ -74,7 +75,8 @@ class VendorService(CustomRequestUtil):
                 account_number=account_number,
                 business_email=business_email,
                 business_phone=business_phone,
-                business_address=business_address
+                business_address=business_address,
+                created_by=user
             )
         )
 
@@ -98,14 +100,15 @@ class VendorService(CustomRequestUtil):
         return message, None
 
 
-    def find_vendor_by_email(self, email):
-        vendor = VendorProfile.objects.filter(
-            Q(user__email__iexact=email) | Q(business_email__iexact=email)
-        ).first()
+    def fetch_authenticated_vendor(self):
+
+        vendor = self.auth_vendor_profile
         if not vendor:
-            return None, self.make_error(f"Vendor with email '{email}' not found")
+            return None, self.make_error(f"Please login your vendor account to proceed")
 
         return vendor, None
+
+
 
     def update_single(self, payload):
         vendor_profile = self.auth_vendor_profile
@@ -126,7 +129,11 @@ class VendorService(CustomRequestUtil):
         vendor_profile.bank_name = payload.get('bank_name', vendor_profile.bank_name)
         vendor_profile.account_number = payload.get('account_number', vendor_profile.account_number)
         vendor_profile.business_email = payload.get('business_email', vendor_profile.business_email)
+        vendor_profile.business_phone = payload.get('business_phone', vendor_profile.business_phone)
         vendor_profile.business_address = payload.get('business_address', vendor_profile.business_address)
+        vendor_profile.updated_at = timezone.now()
+        vendor_profile.updated_by = user
+
 
         if payload.get('business_logo'):
             vendor_profile.business_logo = payload.get('business_logo')

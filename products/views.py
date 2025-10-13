@@ -6,7 +6,10 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views import View
 
-from products.models import Wishlist
+from products.models import Wishlist, Subcategory
+from products.serializers.product_serializer import CreateProductSerializer
+from products.services.category_brand_service import CategoryService, ColorService, BrandService, TagService, \
+    SubcategoryService
 from products.services.product_service import ProductService
 from products.services.review_service import ProductReviewService
 from products.services.wishlist_service import WishlistService
@@ -74,7 +77,7 @@ class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
         )
 
 
-class CreateListProductView(View, CustomRequestUtil):
+class ListProductView(View, CustomRequestUtil):
     extra_context_data = {
         "title": "Our Shop"
     }
@@ -97,6 +100,116 @@ class CreateListProductView(View, CustomRequestUtil):
             category=category, subcategory=subcategory, paginate=True
         )
 
+
+class CreateProductView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Add Product"
+    }
+
+    template_name = "backend/add-new-product.html"
+
+    def get(self, request, *args, **kwargs):
+        color_service = ColorService(request)
+        brand_service = BrandService(request)
+        tag_service = TagService(request)
+
+        self.extra_context_data["colors"] = color_service.fetch_list()
+        self.extra_context_data["brands"] = brand_service.fetch_list()
+        self.extra_context_data["tags"] = tag_service.fetch_list()
+
+        return self.process_request(
+            request, target_view="add-product"
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.template_on_error = "backend/add-new-product.html"
+        subcategory_service = SubcategoryService(request)
+        tag_service = TagService(request)
+        color_service = ColorService(request)
+        brand_service = BrandService(request)
+        category_service = CategoryService(request)
+        product_service = ProductService(request)
+
+        payload = {
+            'name' : request.POST.get('name'),
+            'price' : request.POST.get('price'),
+            'percentage_discount' : request.POST.get('percentage_discount', None),
+            'short_description' : request.POST.get('short_description'),
+            'description' : request.POST.get('description'),
+            'stock' : request.POST.get('stock'),
+            'weight' : request.POST.get('weight'),
+            'sale_start' : request.POST.get('sale_start'),
+            'dimensions' : request.POST.get('dimensions'),
+            'sale_end' : request.POST.get('sale_end'),
+            'add_product_to_sales' : request.POST.get('add_product_to_sales'),
+            'sizes' : request.POST.get('sizes'),
+        }
+
+        subcategory_ids = request.POST.getlist('subcategories')
+        if subcategory_ids:
+            payload['subcategories'] = subcategory_service.fetch_by_ids(subcategory_ids)
+
+        tag_ids = request.POST.getlist('tags')
+        if tag_ids:
+            payload['tags'] = tag_service.fetch_by_ids(tag_ids)
+
+        color_ids = request.POST.getlist('colors')
+        if color_ids:
+            payload['colors'] = color_service.fetch_by_ids(color_ids)
+
+        brand_id = request.POST.get('brand')
+        if brand_id:
+            payload['brand'], _ = brand_service.fetch_single_by_id(brand_id)
+
+        category_id = request.POST.get('category')
+        if category_id:
+            payload['category'], _ = category_service.fetch_single_by_id(category_id)
+
+        payload['media'] = request.FILES.getlist('media')
+
+        print(request.FILES.get('media'))
+        print(request.FILES.getlist('media'))
+        print(request.POST.get('add_product_to_sales'))
+
+
+        return self.process_request(
+            request, target_function=product_service.create_single,
+            target_view="add-product", payload=payload
+        )
+
+
+class CreateCategoryView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Add Category"
+    }
+    template_name = "backend/add-new-category.html"
+
+    def get(self, request, *args, **kwargs):
+
+        return self.process_request(
+            request, target_view="add-category"
+
+        )
+
+    def post(self, request, *args, **kwargs):
+
+        self.template_on_error = "backend/add-new-category.html"
+        name = request.POST.get('name')
+        cover_image = request.FILES.get('cover_image')
+
+        payload = {
+            "name": name,
+            "cover_image": cover_image
+        }
+        category_service = CategoryService(self.request)
+
+        return self.process_request(
+            request, target_function=category_service.create_single,
+            target_view="add-category", payload=payload
+        )
+
+
+
 class AddOrRemoveFromWishlistView(View, CustomRequestUtil):
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -118,7 +231,6 @@ class WishlistView(LoginRequiredMixin, View, CustomRequestUtil):
     extra_context_data = {
         "title":"My Wishlist"
     }
-    login_url = '/login/'
 
     def get(self, request, *args, **kwargs):
         self.template_name = "frontend/wishlist.html"
@@ -129,3 +241,8 @@ class WishlistView(LoginRequiredMixin, View, CustomRequestUtil):
         return self.process_request(
             request, target_function=wishlist_service.fetch_list
         )
+
+
+def get_subcategories(request, category_id):
+    subcategories = Subcategory.available_objects.filter(category_id=category_id).values('id', 'name')
+    return JsonResponse(list(subcategories), safe=False)
