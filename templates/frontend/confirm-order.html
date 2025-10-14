@@ -1,0 +1,164 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block content %}
+<!-- Confirm Order section Start -->
+<section class="checkout-section-2 section-b-space">
+  <div class="container-fluid-lg">
+    <div class="row g-sm-4 g-3">
+      <!-- Left Side: Delivery & Payment Summary -->
+      <div class="col-lg-8">
+        <div class="left-sidebar-checkout">
+          <div class="checkout-detail-box">
+            <ul>
+              <!-- Delivery Address Summary -->
+              <li>
+                <div class="checkout-icon">
+                  <lord-icon
+                    src="https://cdn.lordicon.com/ggihhudh.json"
+                    trigger="loop-on-hover"
+                    colors="primary:#121331,secondary:#646e78,tertiary:#0baf9a"
+                    class="lord-icon"
+                  >
+                  </lord-icon>
+                </div>
+
+                <div class="checkout-box">
+                  <div class="checkout-title">
+                    <h4>Delivery Address</h4>
+                  </div>
+
+                  <div class="checkout-detail">
+                    <ul class="delivery-detail-list">
+                      <li><strong>Full Name:</strong> {{ order.first_name }} {{ order.last_name }}</li><br>
+                      <li><strong>Email:</strong> {{ order.email }}</li><br>
+                      <li><strong>Phone:</strong> {{ order.phone }}</li><br>
+                      <li><strong>Address:</strong> {{ order.address }}</li><br>
+                      <li><strong>LGA:</strong> {{ order.lga }}</li><br>
+                      <li><strong>State:</strong> {{ order.state }}</li><br>
+
+                    </ul>
+                    <a href="{% url 'checkout' %}" class="text-theme mt-2 d-inline-block small">
+                      <i class="ri-edit-line"></i> Edit Address
+                    </a>
+                  </div>
+                </div>
+              </li>
+
+              <!-- Payment Method Summary -->
+              <li>
+                <div class="checkout-icon">
+                  <lord-icon
+                    src="https://cdn.lordicon.com/qmcsqnle.json"
+                    trigger="loop-on-hover"
+                    colors="primary:#0baf9a,secondary:#0baf9a"
+                    class="lord-icon"
+                  >
+                  </lord-icon>
+                </div>
+
+                <div class="checkout-box">
+                  <div class="checkout-title">
+                    <h4>Payment Method</h4>
+                  </div>
+
+                  <div class="checkout-detail">
+                    <p>
+                      <strong>Method:</strong> Pay with Card/Bank Transfer (Paystack)
+                    </p>
+                    <a href="{% url 'checkout' %}" class="text-theme mt-2 d-inline-block small">
+                      <i class="ri-edit-line"></i> Change Payment Method
+                    </a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Order Summary -->
+      <div class="col-lg-4">
+        <div class="right-side-summery-box">
+          <div class="summery-box-2">
+            <div class="summery-header">
+              <h3>Order Summary</h3>
+            </div>
+
+            <ul class="summery-contain">
+              {% for item in cart %}
+              <li>
+                {% with item.product.product_media.first as first_media %}
+                {% if first_media %}
+                <img
+                  src="{{ first_media.image.url }}"
+                  class="img-fluid blur-up lazyloaded checkout-image"
+                  alt="{{ item.product.name }}"
+                />
+                {% endif %}
+                {% endwith %}
+                <h4>
+                  {{ item.product.name }}
+                  <span>X {{ item.quantity }}</span>
+                </h4>
+                <h4 class="price">{{ item.total_price|naira }}</h4>
+              </li>
+              {% endfor %}
+            </ul>
+
+            <ul class="summery-total">
+              <li>
+                <h4>Subtotal</h4>
+                <h4 class="price">{{ cart.get_total_cost|naira }}</h4>
+              </li>
+              <li class="list-total">
+                <h4>Total (NGN)</h4>
+                <h4 class="price fw-bold">{{ cart.get_total_cost|naira }}</h4>
+              </li>
+            </ul>
+          </div>
+
+            <button
+              type="submit"
+              class="btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold"
+              onclick="payWithPaystack()"
+              id="paystack-payment"
+            >
+              Confirm Order
+            </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Confirm Order section End -->
+
+
+<script src="https://js.paystack.co/v2/inline.js"></script>
+
+
+<script>
+    function payWithPaystack() {
+        var handler = PaystackPop.setup({
+            key: "{{paystack_public_key}}",
+            email: "{{order.email}}",
+            amount: "{{order.amount_in_kobo}}",
+            currency: "NGN",
+            ref: "{{order.ref}}" + Math.floor(Math.random() + 1000000000 + 1),
+            callback: function (response) {
+                window.location.href = "/paystack-verify-payment/{{order.id}}/?reference=" + response.reference + "&payment_method=Paystack";
+            },
+            onClose: function () {
+                alert("Payment Window Closed")
+            }
+        });
+        handler.openIframe();
+    }
+
+</script>
+
+
+{% endblock content %}

@@ -1,66 +1,89 @@
+import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
 
 from cart.services.cart_service import CartService
-from products.models import Category
 from products.services.product_service import ProductService
 from services.util import CustomRequestUtil, send_email
-from .models import Payment, OrderItem, Order, BankAccount
-
-from django.http import JsonResponse
+from .models import OrderItem, Order, PaymentStatus
 
 from .services.order_service import OrderService
 
 
-def verify_payment(request, ref):
-    # try:
+def paystack_verify_payment(request, order_id):
     cart = CartService(request)
-    payment = Payment.objects.filter(ref=ref).first()
-    verified = payment.verify_payment()
+    order_service = OrderService(request)
+    order, _ = order_service.fetch_single_by_id(order_id)
+    if not order:
+        return None, _
 
-    if verified:
-        last_order = Order.objects.latest('created_at')
+    reference = request.GET.get("reference", "")
+    payment_method = request.GET.get("payment_reference", "")
 
-        if last_order:
-            order = get_object_or_404(Order, pk=last_order.id)
-            order.paid = True
-            order.save()
+    if reference:
+        headers = {
+            "Authorization" : f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+            "Content-Type" : "application/json"
+        }
 
-            order_info = {
-                'id': order.id,
-                'total_cost': order.total_cost
-            }
+        response = requests.get(
+            f"https://api.paystack.co/transaction/verify/{reference}", headers=headers
+        )
 
-            context = {
-                'placed_order': order_info,
-                'payment': payment
-            }
-            cart.clear()
-            return render(request, 'thank-you.html', context)
-        else:
-            messages.warning(request, 'Order ID not found')
-            return JsonResponse({'error_message': 'Order ID not found'})
-    else:
-        messages.warning(request, 'Oops, your order was not processed, please contact support.')
-        return redirect('/')
-# except Payment.DoesNotExist:
-#     messages.warning(request, 'Payment not found for this ref.')
-#     return JsonResponse({'error_message': 'Payment not found.'})
+        response_data = response.json()
+        print(response_data)
+        if response_data["status"]:
+            if response_data["data"]["status"] == "success":
+                if order.payment_status == PaymentStatus.processing:
+                    order.payment_status = PaymentStatus.paid
+                    order.payment_method = payment_method
+                    order.save()
+
+                    cart.clear()
+
+                    #TODO: send payment successful email to user
+                    #TODO: send payment successful email to vendors involved
+
+                    return redirect(f"/payment-status/{order.id}/?payment_status=Paid")
+
+        return redirect(f"/payment-status/{order.id}/?payment_status=Failed")
+    return None
+
+
+
+class OrderSuccessView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Order Success"
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.template_name = "frontend/order-success.html"
+        self.context_object_name = 'order'
+
+        payment_status = request.GET.get("payment_status")
+
+        if payment_status == "Failed":
+            request.session["order_id"] = kwargs.get("order_id")
+            return redirect("/confirm-order/")
+
+        order_service = OrderService(self.request)
+
+        return self.process_request(
+            request, target_function=order_service.fetch_single_by_id, order_id=kwargs.get("order_id")
+        )
+
 
 
 @login_required
 def check_out(request):
 
-    bank = BankAccount.objects.filter(id=1).first()
     last_order = Order.objects.last()
 
     context = {
         "title":"Checkout",
-        "bank": bank,
         "last_order": last_order
     }
 
@@ -93,46 +116,49 @@ def check_out(request):
 
             if product_instance.percentage_discount:
                 item_cost = product_instance.discounted_price * quantity_in_cart
+                original_price = product_instance.discounted_price
             else:
                 item_cost = product_instance.price * quantity_in_cart
+                original_price = product_instance.price
 
             total_cost += item_cost
 
-            order_item = OrderItem.objects.create(
+            OrderItem.objects.create(
                 order=order,
                 product=product_instance,
+                original_price=original_price,
                 price=item_cost,
                 quantity=quantity_in_cart
             )
         #     TODO: update quantity sold
 
-        payment = Payment.objects.create(
-            amount=total_cost,
-            email=current_user.email,
-            user=current_user,
-            order=order,
-            ref=order.ref
-        )
-
         order.total_cost = total_cost
         order.save()
 
-        context = {
-            'first_name': order.first_name,
-            'last_name': order.last_name,
-            'title': 'Thank You',
-            'items' : OrderItem.objects.filter(order=order),
-            'order': order,
-            'ref': order.ref,
-            'total_cost': total_cost,
-            'payment': payment,
-        }
-        cart.clear()
-        # send_email('emails/order-initiated.html', context, 'Order Initiated', 'whoisfreee@gmail.com')
+        request.session["order_id"] = order.id
 
-        return render(request, 'frontend/order-success.html', context)
+        return redirect("confirm-order")
 
     return render(request, 'frontend/checkout.html', context)
+
+
+class ConfirmOrderView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Confirm orders"
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.template_name = "frontend/confirm-order.html"
+        self.context_object_name = 'order'
+        order_id = request.session.get("order_id")
+
+        self.extra_context_data['paystack_public_key'] = settings.PAYSTACK_PUBLIC_KEY
+
+        order_service = OrderService(self.request)
+
+        return self.process_request(
+            request, target_function=order_service.fetch_single_by_id, order_id=order_id
+        )
 
 
 class CreateListOrderView(View, CustomRequestUtil):

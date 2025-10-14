@@ -58,8 +58,16 @@ class OrderService(CustomRequestUtil):
 
         return qs
 
-    def fetch_single(self, ref):
+    def fetch_single_by_ref(self, ref):
         order = self.get_base_query().filter(ref=ref).first()
+        if not order:
+            return None, self.make_error("Order does not exist")
+
+        return order, None
+
+
+    def fetch_single_by_id(self, order_id):
+        order = self.get_base_query().filter(id=order_id).first()
         if not order:
             return None, self.make_error("Order does not exist")
 

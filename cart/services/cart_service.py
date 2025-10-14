@@ -21,18 +21,20 @@ class CartService(CustomRequestUtil):
 
     def __iter__(self):
         product_service = ProductService(self.request)
-        for p in self.cart.keys():
-            self.cart[str(p)]['product'] = product_service.get_base_query().filter(id=p).first()
+        product_ids = self.cart.keys()
+        products = product_service.get_base_query().filter(id__in=product_ids)
 
-        for item in self.cart.values():
-            if item['product'].percentage_discount:
-                item['total_price'] = int(item['product'].discounted_price * item['quantity'])
+        for product in products:
+            item = self.cart[str(product.id)].copy()
+            item['product'] = product
+
+            if product.percentage_discount:
+                item['total_price'] = int(product.discounted_price * item['quantity'])
             else:
-                item['total_price'] = int(item['product'].price * item['quantity'])
+                item['total_price'] = int(product.price * item['quantity'])
 
             yield item
-        # This method makes the Cart class iterable,
-        # meaning you can loop through the items in the cart using a for loop.
+
 
     def __len__(self):
         return len(self.cart)
