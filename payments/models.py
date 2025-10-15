@@ -61,12 +61,12 @@ class Order(BaseModel):
     def amount_in_kobo(self):
         return self.total_cost * 100
 
-    def save(self, *args, **kwargs):
-        if not self.ref:
-            timestamp = timezone.now().strftime("%Y%m%d%H%M%S")  # e.g. 20251005123245
-            random_part = uuid.uuid4().hex[:6].upper()  # e.g. A3F9C1
-            self.ref = f"ORD-{timestamp}-{random_part}"
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.ref:
+    #         timestamp = timezone.now().strftime("%Y%m%d%H%M%S")  # e.g. 20251005123245
+    #         random_part = uuid.uuid4().hex[:6].upper()  # e.g. A3F9C1
+    #         self.ref = f"ORD-{timestamp}-{random_part}"
+    #     super().save(*args, **kwargs)
 
 
 
@@ -141,11 +141,12 @@ class Payment(BaseModel):
         super().save(*args, **kwargs)
 
 
-
-class BankAccount(models.Model):
-    bank_name = models.CharField(max_length=255)
-    account_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=255)
+class Transaction(BaseModel):
+    order = models.ForeignKey(Order, related_name="transactions", on_delete=models.CASCADE)
+    reference = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=25)
+    amount = models.FloatField()
+    gateway_response = models.JSONField(blank=True, null=True)
 
     def __str__(self):
-        return self.bank_name
+        return f"{self.order} - {self.reference} - {self.amount} - {self.status}"

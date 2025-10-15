@@ -1,5 +1,6 @@
 import json
 
+from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -84,6 +85,11 @@ def remove_from_cart(request):
 
 
 def cart(request):
+
+    if not request.session.get("cart"):
+        messages.error(request, "There are no items in your cart")
+        return redirect("home")
+
     context = {
         "title": "Cart"
     }

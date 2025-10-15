@@ -142,12 +142,15 @@
 
 <script>
     function payWithPaystack() {
+        const orderId = "{{ order.id }}";
+        const uniqueRef = `ORD-${orderId}-${Date.now()}`;
+
         var handler = PaystackPop.setup({
             key: "{{paystack_public_key}}",
             email: "{{order.email}}",
             amount: "{{order.amount_in_kobo}}",
             currency: "NGN",
-            ref: "{{order.ref}}" + Math.floor(Math.random() + 1000000000 + 1),
+            ref: uniqueRef,
             callback: function (response) {
                 window.location.href = "/paystack-verify-payment/{{order.id}}/?reference=" + response.reference + "&payment_method=Paystack";
             },

@@ -11,7 +11,7 @@
     <meta name="description" content="OyaBuyNow">
     <meta name="keywords" content="OyaBuyNow">
     <meta name="author" content="OyaBuyNow">
-    <link rel="icon" href="{% static 'frontend/assets/images/favicon/1.png' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
     <title>{{ title }} | OyaBuyNow</title>
 
     <!-- Google font -->
@@ -164,8 +164,8 @@
                                     <i class="fa-solid fa-bars"></i>
                                 </span>
                             </button>
-                            <a href="index.html" class="web-logo nav-logo">
-                                <img src="{% static 'frontend/assets/images/logo/1.png' %}" class="img-fluid blur-up lazyload" alt="">
+                            <a href="{% url 'home' %}" class="web-logo nav-logo">
+                                <img src="{% static 'frontend/assets/images/logo/logo.png' %}" class="img-fluid blur-up lazyload" alt="">
                             </a>
 
                             <div class="middle-box">

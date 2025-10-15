@@ -13,7 +13,7 @@
     <meta name="keywords"
         content="admin template, Oyabuynow admin template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="pixelstrap">
-    <link rel="icon" href="{% static 'backend/assets/images/favicon.png' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
     <link rel="shortcut icon" href="{% static 'backend/assets/images/favicon.png' %}" type="image/x-icon">
     <title>{{title}} | OyaBuyNow</title>
 
@@ -77,15 +77,15 @@
             <div class="header-wrapper m-0">
                 <div class="header-logo-wrapper p-0">
                     <div class="logo-wrapper">
-                        <a href="index.html">
-                            <img class="img-fluid main-logo" src="{% static 'backend/assets/images/logo/1.png' %}" alt="logo">
-                            <img class="img-fluid white-logo" src="{% static 'backend/assets/images/logo/1-white.png' %}" alt="logo">
+                        <a href="{% url 'home' %}">
+                            <img class="img-fluid main-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo">
+                            <img class="img-fluid white-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo">
                         </a>
                     </div>
                     <div class="toggle-sidebar">
                         <i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i>
-                        <a href="index.html">
-                            <img src="{% static 'backend/assets/images/logo/1.png' %}" class="img-fluid" alt="">
+                        <a href="{% url 'home' %}">
+                            <img src="{% static 'frontend/assets/images/logo/logo.png' %}" class="img-fluid" alt="">
                         </a>
                     </div>
                 </div>

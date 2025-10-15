@@ -93,7 +93,7 @@
                                     <tr>
                                         <td class="product-detail">
                                             <div class="product border-0">
-                                                <a href="{% url 'product-detail' product.slug %}" class="product-image">
+                                                <a href="{% url 'product-detail' item.product.slug %}" class="product-image">
                                                     {% with item.product.product_media.first as first_media %}
                                                     {% if first_media %}
                                                     <img
@@ -107,7 +107,7 @@
                                                 <div class="product-detail">
                                                     <ul>
                                                         <li class="name">
-                                                            <a href="{% url 'product-detail' product.slug %}">{{item.product.name}}</a>
+                                                            <a href="{% url 'product-detail' item.product.slug %}">{{item.product.name}}</a>
                                                         </li>
                                                         {% if item.product.created_by %}
                                                         <li class="text-content">

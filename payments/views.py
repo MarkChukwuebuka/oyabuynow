@@ -1,60 +1,72 @@
 import requests
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect
+
 from django.views import View
 
 from cart.services.cart_service import CartService
 from products.services.product_service import ProductService
 from services.util import CustomRequestUtil, send_email
-from .models import OrderItem, Order, PaymentStatus
+from .models import OrderItem, Order, PaymentStatus, Transaction
 
 from .services.order_service import OrderService
 
 
+@login_required
 def paystack_verify_payment(request, order_id):
     cart = CartService(request)
     order_service = OrderService(request)
     order, _ = order_service.fetch_single_by_id(order_id)
     if not order:
-        return None, _
+        return redirect("checkout")
 
     reference = request.GET.get("reference", "")
-    payment_method = request.GET.get("payment_reference", "")
+    payment_method = request.GET.get("payment_method", "")
 
-    if reference:
-        headers = {
-            "Authorization" : f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-            "Content-Type" : "application/json"
-        }
-
-        response = requests.get(
-            f"https://api.paystack.co/transaction/verify/{reference}", headers=headers
-        )
-
-        response_data = response.json()
-        print(response_data)
-        if response_data["status"]:
-            if response_data["data"]["status"] == "success":
-                if order.payment_status == PaymentStatus.processing:
-                    order.payment_status = PaymentStatus.paid
-                    order.payment_method = payment_method
-                    order.save()
-
-                    cart.clear()
-
-                    #TODO: send payment successful email to user
-                    #TODO: send payment successful email to vendors involved
-
-                    return redirect(f"/payment-status/{order.id}/?payment_status=Paid")
-
+    if not reference:
         return redirect(f"/payment-status/{order.id}/?payment_status=Failed")
-    return None
+
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    response = requests.get(
+        f"https://api.paystack.co/transaction/verify/{reference}",
+        headers=headers
+    )
+
+    response_data = response.json()
+    print(response_data)
+
+    Transaction.objects.create(
+        order=order,
+        reference=reference,
+        status=response_data["data"]["status"],
+        amount=response_data["data"]["amount"] / 100,
+        gateway_response=response_data,
+    )
+
+    if response_data.get("status") and response_data["data"]["status"] == "success":
+        amount_paid = response_data["data"]["amount"] / 100
+        if abs(amount_paid - order.total_cost) < 1:
+            if order.payment_status == PaymentStatus.processing:
+                order.payment_status = PaymentStatus.paid
+                order.payment_method = payment_method
+                order.ref = reference
+                order.save(update_fields=["payment_status", "payment_method", "ref"])
+                cart.clear()
+
+                # TODO: send success email
+                return redirect(f"/payment-status/{order.id}/?payment_status=Paid")
+
+    return redirect(f"/payment-status/{order.id}/?payment_status=Failed")
 
 
 
-class OrderSuccessView(View, CustomRequestUtil):
+class OrderSuccessView(LoginRequiredMixin, View, CustomRequestUtil):
     extra_context_data = {
         "title": "Order Success"
     }
@@ -80,6 +92,11 @@ class OrderSuccessView(View, CustomRequestUtil):
 @login_required
 def check_out(request):
 
+    if not request.session.get("cart"):
+        messages.error(request, "There are no items in your cart")
+        return redirect("home")
+
+
     last_order = Order.objects.last()
 
     context = {
@@ -88,7 +105,6 @@ def check_out(request):
     }
 
     cart = CartService(request)
-    current_user = request.user
     product_service = ProductService(request)
 
     if request.method == 'POST':
@@ -103,6 +119,8 @@ def check_out(request):
         )
 
         order = OrderService(request).create_single(payload)
+
+
 
         total_cost = 0
 
@@ -142,7 +160,7 @@ def check_out(request):
     return render(request, 'frontend/checkout.html', context)
 
 
-class ConfirmOrderView(View, CustomRequestUtil):
+class ConfirmOrderView(LoginRequiredMixin, View, CustomRequestUtil):
     extra_context_data = {
         "title": "Confirm orders"
     }
@@ -151,6 +169,11 @@ class ConfirmOrderView(View, CustomRequestUtil):
         self.template_name = "frontend/confirm-order.html"
         self.context_object_name = 'order'
         order_id = request.session.get("order_id")
+
+        if not request.session.get("cart"):
+            messages.error(request, "There are no items in your cart")
+
+            return redirect("home")
 
         self.extra_context_data['paystack_public_key'] = settings.PAYSTACK_PUBLIC_KEY
 

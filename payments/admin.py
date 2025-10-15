@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from crm.admin import BaseAdmin
-from payments.models import Order, OrderItem, Payment, BankAccount
+from payments.models import Order, OrderItem, Payment, Transaction
 
 
 class OrderItemInline(admin.TabularInline):
@@ -37,9 +37,9 @@ class PaymentAdmin(BaseAdmin):
     list_filter = ["verified"]
 
 
-@admin.register(BankAccount)
-class BankAccountAdmin(admin.ModelAdmin):
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
     list_display = [
-        "bank_name", "account_number", "account_name"
+        "order", "amount", "reference", "status"
     ]
 
