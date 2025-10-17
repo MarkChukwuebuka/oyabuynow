@@ -323,7 +323,7 @@
                                     <div class="tab-pane fade show active" id="description" role="tabpanel">
                                         <div class="product-description">
                                             <div class="nav-desh">
-                                                <p>{{ product.description }}</p>
+                                                <p>{{ product.description | safe }}</p>
                                             </div>
 
                                         </div>
@@ -380,7 +380,7 @@
                                                                 <div class="review-title-2">
                                                                     <h4 class="fw-bold">Review this product</h4>
                                                                     <p>Let other customers know what you think</p>
-                                                                    <button class="btn" type="button"
+                                                                    <button class="btn btn-animation" type="button"
                                                                         data-bs-toggle="modal"
                                                                         data-bs-target="#writereview">Write a
                                                                         review</button>
@@ -401,7 +401,7 @@
                                                                     <div>
                                                                         <div class="people-image people-text">
                                                                             <img alt="user" class="img-fluid "
-                                                                                src="{{review.user.profile.image.url}}">
+                                                                                src="{% static 'backend/assets/images/default-image.png' %}">
                                                                         </div>
                                                                     </div>
                                                                     <div class="people-comment">
@@ -439,24 +439,20 @@
 
                 <div class="col-xxl-3 col-xl-4 col-lg-5 d-none d-lg-block wow fadeInUp">
                     <div class="right-sidebar-box">
-                        {% if product.user.vendor_profile %}
+                        {% if product.created_by.vendor_profile %}
                         <div class="vendor-box">
                             <div class="vendor-contain">
                                 <div class="vendor-image">
-                                    <img src="{{product.user.vendor_profile.image.url}}" class="blur-up lazyload" alt="">
+                                    <img src="{{product.created_by.vendor_profile.business_logo.url}}" class="blur-up lazyload" alt="product.created_by.vendor_profile.store_name">
                                 </div>
 
                                 <div class="vendor-name">
-                                    <h5 class="fw-500">{{product.user.vendor_profile.name}}</h5>
+                                    <h5 class="fw-500">{{product.created_by.vendor_profile.store_name}}</h5>
 
-                                    {% show_rating vendor_id=product.user.vendor_profile.id %}
-                                    </div>
+                                    {% show_rating vendor_id=product.created_by.vendor_profile.id %}
 
                                 </div>
                             </div>
-
-                            <p class="vendor-detail">{{product.user.vendor_profile.short_description}}</p>
-
 
                         </div>
                         {% endif %}
@@ -709,7 +705,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-md btn-theme-outline fw-bold"
                                 data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-md fw-bold text-light theme-bg-color">Save changes</button>
+                            <button type="submit" class="btn btn-md fw-bold text-light theme-bg-color">Submit Review</button>
                         </div>
 
                     </form>

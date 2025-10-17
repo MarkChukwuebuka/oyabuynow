@@ -122,6 +122,7 @@ class VendorProfile(BaseModel):
     account_number = models.CharField(max_length=255, null=True, blank=True)
     business_address = models.TextField(blank=True, null=True)
     business_logo = CloudinaryField('business_logo', blank=True, null=True)
+    rating = models.PositiveIntegerField(null=True, blank=True)
     id_card = CloudinaryField('id_card', blank=True, null=True)
     profile_photo = CloudinaryField('profile_photo', blank=True, null=True)
     status = models.CharField(

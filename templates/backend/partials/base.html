@@ -11,10 +11,10 @@
     <meta name="description"
         content="Oyabuynow admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
     <meta name="keywords"
-        content="admin template, Oyabuynow admin template, dashboard template, flat admin template, responsive admin template, web app">
+        content="Oyabuynow dashboard template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="pixelstrap">
     <link rel="icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
-    <link rel="shortcut icon" href="{% static 'backend/assets/images/favicon.png' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
     <title>{{title}} | OyaBuyNow</title>
 
     <!-- Google font-->
@@ -75,20 +75,34 @@
         <!-- Page Header Start-->
         <div class="page-header">
             <div class="header-wrapper m-0">
-                <div class="header-logo-wrapper p-0">
-                    <div class="logo-wrapper">
-                        <a href="{% url 'home' %}">
-                            <img class="img-fluid main-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo">
-                            <img class="img-fluid white-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo">
-                        </a>
-                    </div>
-                    <div class="toggle-sidebar">
-                        <i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i>
-                        <a href="{% url 'home' %}">
-                            <img src="{% static 'frontend/assets/images/logo/logo.png' %}" class="img-fluid" alt="">
-                        </a>
-                    </div>
-                </div>
+
+                    <div class="header-logo-wrapper p-0">
+  <div class="logo-wrapper">
+    <a href="{% url 'home' %}">
+      <img class="img-fluid main-logo" src="{% static 'frontend/assets/images/logo/slogo.png' %}" alt="logo" height="500">
+    </a>
+  </div>
+  <div class="toggle-sidebar">
+    <i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i>
+  </div>
+</div>
+
+
+
+<!--                <div class="header-logo-wrapper p-0">-->
+<!--                    <div class="logo-wrapper">-->
+<!--                        <a href="{% url 'home' %}">-->
+<!--                            <img class="img-fluid main-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo" height="50px">-->
+<!--                            <img class="img-fluid white-logo" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo" height="50px">-->
+<!--                        </a>-->
+<!--                    </div>-->
+<!--                    <div class="toggle-sidebar">-->
+<!--                        <i class="status_toggle middle sidebar-toggle" data-feather="align-center"></i>-->
+<!--                        <a href="{% url 'home' %}">-->
+<!--                            <img src="{% static 'frontend/assets/images/logo/logo.png' %}" class="img-fluid" alt="" height="1000">-->
+<!--                        </a>-->
+<!--                    </div>-->
+<!--                </div>-->
 
                 <form class="form-inline search-full" action="javascript:void(0)" method="get">
                     <div class="form-group w-100">
@@ -158,9 +172,10 @@
             <div class="sidebar-wrapper">
                 <div id="sidebarEffect"></div>
                 <div>
-                    <div class="logo-wrapper logo-wrapper-center">
+                    <div class="logo-wrapper logo-wrapper-center mb-4">
                         <a href="{% url 'home' %}" data-bs-original-title="" title="">
-                            <img class="img-fluid for-white" src="{% static 'backend/assets/images/logo/full-white.png' %}" alt="logo">
+                            <img class="img-fluid for-white" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo"
+                                 style="height:75px !important; margin-bottom:10px !important;">
                         </a>
                         <div class="back-btn">
                             <i class="fa fa-angle-left"></i>
@@ -171,12 +186,12 @@
                     </div>
                     <div class="logo-icon-wrapper">
                         <a href="{% url 'home' %}">
-                            <img class="img-fluid main-logo main-white" src="{% static 'backend/assets/images/logo/logo.png' %}" alt="logo">
-                            <img class="img-fluid main-logo main-dark" src="{% static 'backend/assets/images/logo/logo-white.png' %}"
-                                alt="logo">
+                            <img class="img-fluid main-logo main-white" src="{% static 'frontend/assets/images/logo/logo.png' %}" alt="logo" height="1000">
+                            <img class="img-fluid main-logo main-dark" src="{% static 'frontend/assets/images/logo/logo.png' %}"
+                                alt="logo" height="1000">
                         </a>
                     </div>
-                    <nav class="sidebar-main">
+                    <nav class="sidebar-main mt-4" style="margin-bottom:10px !important;">
                         <div class="left-arrow" id="left-arrow">
                             <i data-feather="arrow-left"></i>
                         </div>

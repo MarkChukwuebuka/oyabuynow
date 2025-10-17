@@ -9,7 +9,7 @@ from accounts.models import User
 from accounts.services.auth_service import AuthService
 from accounts.services.user_service import UserService
 from accounts.services.vendor_service import VendorService
-from payments.models import Order, Payment, OrderItem, OrderStatusChoices
+from payments.models import Order, OrderItem, OrderStatusChoices, PaymentStatus
 from payments.services.order_service import OrderService, OrderItemService
 from products.models import Product
 from products.services.product_service import ProductService
@@ -105,8 +105,8 @@ class UserDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
     @customer_required
     def get(self, request, *args, **kwargs):
-        completed_orders = Payment.objects.filter(user=self.auth_user, verified=True).count() or 0
-        pending_orders = Order.objects.filter(user=self.auth_user, paid=False).count() or 0
+        completed_orders = Order.objects.filter(user=self.auth_user, payment_status=PaymentStatus.paid).count() or 0
+        pending_orders = Order.objects.filter(user=self.auth_user, payment_status=PaymentStatus.processing).count() or 0
         orders_count = Order.objects.filter(user=self.auth_user).count() or 0
         total_spent = Order.objects.filter(user=self.auth_user, refunded=False).aggregate(
             total_spent=Sum("total_cost")
@@ -140,19 +140,19 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
         total_orders = Order.objects.filter(items__product__created_by=self.auth_user).distinct().count()
         delivered_orders = OrderItem.objects.filter(
-            product__created_by=self.auth_user, status=OrderStatusChoices.delivered, order__paid=True
+            product__created_by=self.auth_user, status=OrderStatusChoices.delivered, order__payment_status=PaymentStatus.paid
         ).count() or 0
         shipped_orders = OrderItem.objects.filter(
-            product__created_by=self.auth_user, status=OrderStatusChoices.shipped, order__paid=True
+            product__created_by=self.auth_user, status=OrderStatusChoices.shipped, order__payment_status=PaymentStatus.paid
         ).count() or 0
         pending_orders = OrderItem.objects.filter(
-            product__created_by=self.auth_user, status=OrderStatusChoices.ordered, order__paid=True
+            product__created_by=self.auth_user, status=OrderStatusChoices.ordered, order__payment_status=PaymentStatus.paid
         ).count() or 0
 
         total_products = Product.available_objects.filter(created_by=self.auth_user).count() or 0
 
         total_sales = OrderItem.objects.filter(
-            product__created_by=self.auth_user, order__paid=True
+            product__created_by=self.auth_user, order__payment_status=PaymentStatus.paid
         ).aggregate(
             total=Sum("price")
         )["total"] or 0

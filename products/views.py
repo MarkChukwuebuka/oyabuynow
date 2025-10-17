@@ -1,13 +1,10 @@
 import json
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views import View
 
 from products.models import Wishlist, Subcategory
-from products.serializers.product_serializer import CreateProductSerializer
 from products.services.category_brand_service import CategoryService, ColorService, BrandService, TagService, \
     SubcategoryService
 from products.services.product_service import ProductService

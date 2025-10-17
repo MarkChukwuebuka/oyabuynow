@@ -39,7 +39,7 @@ class UserService(CustomRequestUtil):
             defaults=dict(
                 last_name=last_name,
                 first_name=first_name,
-                phone=phone,
+                phone_number=phone,
                 address=address,
                 password=make_password(password)
             )

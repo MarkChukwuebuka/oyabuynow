@@ -1,15 +1,9 @@
 import uuid
 
-from cloudinary.models import CloudinaryField
 from django.db import models
-from django.db.models.signals import post_save
-from django.utils import timezone
-from django.utils.text import slugify
-
 from accounts.models import User
 from crm.models import BaseModel
 from products.models import Product
-import secrets
 
 from services.util import send_email
 
@@ -36,7 +30,6 @@ class Order(BaseModel):
     state = models.CharField(max_length=250, blank=True, null=True)
     lga = models.CharField(max_length=250, blank=True, null=True)
     phone = models.CharField(max_length=250, blank=True, null=True)
-    paid = models.BooleanField(default=False)
     payment_method = models.CharField(max_length=255, null=True, blank=True)
     refunded = models.BooleanField(default=False)
     total_cost = models.FloatField(default=0.0)
@@ -60,14 +53,6 @@ class Order(BaseModel):
 
     def amount_in_kobo(self):
         return self.total_cost * 100
-
-    # def save(self, *args, **kwargs):
-    #     if not self.ref:
-    #         timestamp = timezone.now().strftime("%Y%m%d%H%M%S")  # e.g. 20251005123245
-    #         random_part = uuid.uuid4().hex[:6].upper()  # e.g. A3F9C1
-    #         self.ref = f"ORD-{timestamp}-{random_part}"
-    #     super().save(*args, **kwargs)
-
 
 
 
@@ -104,41 +89,6 @@ class OrderItem(BaseModel):
         super().save(*args, **kwargs)
 
 
-
-class Payment(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.IntegerField(blank=True, null=True)
-    ref = models.CharField(max_length=250)
-    email = models.EmailField(max_length=250)
-    verified = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    order = models.OneToOneField(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment')
-
-    def __str__(self):
-        return f"{self.user} - {self.amount}"
-
-    def save(self, *args, **kwargs):
-        # Check if the payment already exists
-        if self.pk is not None:
-            old_payment = Payment.objects.get(pk=self.pk)
-
-            # Check if the `verified` status has changed
-            if old_payment.verified != self.verified:
-                if self.order:
-                    # Update the `paid` field of the associated order
-                    self.order.paid = self.verified
-                    self.order.save()
-
-                # Send email notification if `verified` is changed to True
-                if self.verified:
-                    context = {
-                        'name': self.order.first_name,
-                        'ref' : self.ref,
-                        'amount' : self.amount
-                    }
-                    send_email('emails/payment-verified.html', context, 'Payment Verified', self.email)
-
-        super().save(*args, **kwargs)
 
 
 class Transaction(BaseModel):

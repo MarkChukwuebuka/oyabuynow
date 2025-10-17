@@ -231,4 +231,4 @@ class ProductService(CustomRequestUtil):
     def get_random_products(self, n=20):
         ids = list(self.fetch_list().values_list('id', flat=True))
         random_ids = random.sample(ids, min(len(ids), n))
-        return self.get_base_query().filter(id__in=random_ids)
+        return self.get_base_query().filter(id__in=random_ids).order_by("?")

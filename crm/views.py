@@ -16,7 +16,7 @@ class HomeView(View, CustomRequestUtil):
 
         top_rated = product_service.fetch_list()[:10]
         new_arrivals = product_service.fetch_list()[:10]
-        best_seller = product_service.fetch_list()[:10]
+        best_seller = product_service.fetch_list().order_by("-quantity_sold")[:10]
         trending_products = product_service.fetch_list().order_by("-views")[:5]
         products = product_service.get_random_products(12)
 

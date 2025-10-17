@@ -19,6 +19,7 @@ from .services.order_service import OrderService
 def paystack_verify_payment(request, order_id):
     cart = CartService(request)
     order_service = OrderService(request)
+    product_service = ProductService(request)
     order, _ = order_service.fetch_single_by_id(order_id)
     if not order:
         return redirect("checkout")
@@ -39,7 +40,6 @@ def paystack_verify_payment(request, order_id):
     )
 
     response_data = response.json()
-    print(response_data)
 
     Transaction.objects.create(
         order=order,
@@ -58,6 +58,9 @@ def paystack_verify_payment(request, order_id):
                 order.ref = reference
                 order.save(update_fields=["payment_status", "payment_method", "ref"])
                 cart.clear()
+
+                for item in order.items.all():
+                    product_service.update_quantity_sold(item.product, item.quantity)
 
                 # TODO: send success email
                 return redirect(f"/payment-status/{order.id}/?payment_status=Paid")
@@ -202,16 +205,16 @@ class CreateListOrderView(View, CustomRequestUtil):
 
 
 class RetrieveUpdateDeleteOrderView(View, CustomRequestUtil):
+    template_name = "backend/order-detail.html"
     extra_context_data = {
         "title": "Order Details"
     }
 
     def get(self, request, *args, **kwargs):
-        self.template_name = "backend/order-details.html"
         self.context_object_name = 'order'
 
         order_service = OrderService(self.request)
 
         return self.process_request(
-            request, target_function=order_service.fetch_single, ref=kwargs.get("ref")
+            request, target_function=order_service.fetch_single_by_ref, ref=kwargs.get("ref")
         )

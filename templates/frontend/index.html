@@ -464,9 +464,10 @@
                         </div>
                     </div>
 
+                    {% if best_seller %}
                     <div class="title d-block">
                         <div>
-                            <h2>Our best Seller</h2>
+                            <h2>Our Best Seller</h2>
                             <span class="title-leaf">
                                 <svg class="icon-width">
                                     <use xlink:href="https://themes.pixelstrap.com/fastkart/assets/svg/leaf.svg#leaf"></use>
@@ -477,246 +478,59 @@
                     </div>
 
                     <div class="best-selling-slider product-wrapper wow fadeInUp">
-                        <div>
-                            <ul class="product-list">
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/11.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
+                        {% for product in best_seller %}
+                            {% if forloop.first or forloop.counter0|divisibleby:4 %}
+                                <div>
+                                    <ul class="product-list">
+                            {% endif %}
 
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Tuffets Whole Wheat Bread</h6>
-                                                </a>
-                                                <span>500 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
+                            <li>
+                                <div class="offer-product">
+                                    <a href="{% url 'product-detail' product.slug %}" class="offer-image">
+                                        {% with product.product_media.first as first_media %}
+                                            {% if first_media %}
+                                                <img src="{{first_media.image.url}}"
+                                                class="blur-up lazyload" alt="{{product.name}}">
+                                            {% endif %}
+                                        {% endwith %}
+                                    </a>
+
+                                    <div class="offer-detail">
+                                        <div>
+                                            <a href="{% url 'product-detail' product.slug %}" class="text-title">
+                                                <h6 class="name">{{ product.name }}</h6>
+                                            </a>
+<!--                                            {% if product.created_by.vendor_profile %}-->
+<!--                                            <span>Sold By : {{ product.created_by.vendor_profile.store_name }}</span>-->
+<!--                                            {% endif %}-->
+                                            <h6 class="price theme-color">
+
+                                                {% if product.percentage_discount %}
+                                                <span class="theme-color">
+                                                    {{ product.discounted_price | naira }}
+                                                </span>
+                                                <del>{{ product.price | naira }}</del>
+                                                {% else %}
+                                                <span class="theme-color">
+                                                    {{ product.price | naira }}
+                                                </span>
+                                                {% endif %}
+
+                                            </h6>
                                         </div>
                                     </div>
-                                </li>
+                                </div>
+                            </li>
 
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/12.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Potato</h6>
-                                                </a>
-                                                <span>500 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/13.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Green Chilli</h6>
-                                                </a>
-                                                <span>200 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/14.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Muffets Burger Bun</h6>
-                                                </a>
-                                                <span>150 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <ul class="product-list">
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/15.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Tuffets Britannia Cheezza</h6>
-                                                </a>
-                                                <span>500 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/16.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Long Life Toned Milk</h6>
-                                                </a>
-                                                <span>1 L</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/17.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Organic Tomato</h6>
-                                                </a>
-                                                <span>1 KG</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/18.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Organic Jam</h6>
-                                                </a>
-                                                <span>150 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <ul class="product-list">
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/19.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Good Life Refined Sunflower Oil</h6>
-                                                </a>
-                                                <span>1 L</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/20.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Good Life Raw Peanuts</h6>
-                                                </a>
-                                                <span>500 G</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/21.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">TufBest Farms Mong Dal</h6>
-                                                </a>
-                                                <span>1 KG</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="offer-product">
-                                        <a href="product-left-thumbnail.html" class="offer-image">
-                                            <img src="{% static 'frontend/assets/images/vegetable/product/22.png' %}"
-                                                class="blur-up lazyload" alt="">
-                                        </a>
-
-                                        <div class="offer-detail">
-                                            <div>
-                                                <a href="product-left-thumbnail.html" class="text-title">
-                                                    <h6 class="name">Frooti Mango Drink</h6>
-                                                </a>
-                                                <span>160 ML</span>
-                                                <h6 class="price theme-color">$ 10.00</h6>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                            {% if forloop.counter|divisibleby:4 or forloop.last %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
+                    {% endif %}
+
+
 
                     <div class="section-t-space">
                         <div class="banner-contain hover-effect">
