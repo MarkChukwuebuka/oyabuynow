@@ -1,0 +1,220 @@
+{% extends "./vendor-dashboard-base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block dashboard_content %}
+
+<div class="dashboard-home">
+  <div class="title">
+    <h2>My Dashboard</h2>
+    <span class="title-leaf">
+      <svg class="icon-width bg-gray">
+        <use xlink:href="https://themes.pixelstrap.com/fastkart/assets/svg/leaf.svg#leaf"></use>
+      </svg>
+    </span>
+  </div>
+
+  <div class="dashboard-user-name">
+    <h6 class="text-content">Hello, <b class="text-title">{{vendor.user.first_name}} {{vendor.user.last_name}}</b></h6>
+    <p class="text-content">From your My Account Dashboard you can view a snapshot of your recent activity.</p>
+  </div>
+  <div class="total-box">
+                                        <div class="row g-sm-4 g-3">
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/order.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/order.svg" class="blur-up lazyload"
+                                                        alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Total Products</h5>
+                                                        <h3>{{ total_products }}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/pending.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/pending.svg" class="blur-up lazyload"
+                                                        alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Total Sales</h5>
+                                                        <h3>{{ total_sales | naira }}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/wishlist.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/wishlist.svg"
+                                                        class="blur-up lazyload" alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Total Orders</h5>
+                                                        <h3>{{ total_orders }}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="total-box">
+                                        <div class="row g-sm-4 g-3">
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/order.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/order.svg" class="blur-up lazyload"
+                                                        alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Pending Orders</h5>
+                                                        <h3>{{ pending_orders }}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/pending.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/pending.svg" class="blur-up lazyload"
+                                                        alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Shipped Orders</h5>
+                                                        <h3>{{shipped_orders}}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                                                <div class="total-contain">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/wishlist.svg"
+                                                        class="img-1 blur-up lazyload" alt="">
+                                                    <img src="https://themes.pixelstrap.com/fastkart/assets/images/svg/wishlist.svg"
+                                                        class="blur-up lazyload" alt="">
+                                                    <div class="total-detail">
+                                                        <h5>Delivered Orders</h5>
+                                                        <h3>{{delivered_orders}}</h3>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% if trending_products %}
+                                    <div class="row g-4">
+                                        <div class="col-xxl-6">
+                                            <div class="dashboard-bg-box">
+                                                <div id="chart"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xxl-6">
+                                            <div class="dashboard-bg-box">
+                                                <div id="sale"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xxl-6">
+                                            <div class="table-responsive dashboard-bg-box">
+                                                <div class="dashboard-title mb-4">
+                                                    <h3>Trending Products</h3>
+                                                </div>
+
+                                                <table class="table product-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Images</th>
+                                                            <th scope="col">Product Name</th>
+                                                            <th scope="col">Price</th>
+                                                            <th scope="col">Sales</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for product in trending_products %}
+                                                        <tr>
+                                                            <td class="product-image">
+                                                                {% with product.product_media.first as first_media %}
+                                                                    {% if first_media %}
+                                                                        <img src="{{first_media.image.url}}"
+                                                                        class="img-fluid" alt="{{product.name}}">
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            </td>
+                                                            <td>
+                                                                <h6>{{product.name}}</h6>
+                                                            </td>
+                                                            <td>
+                                                                <h6>
+                                                                    {% if product.percentage_discount %}
+                                                                    <span class="theme-color">
+                                                                        {{ product.discounted_price | naira }}
+                                                                    </span>
+                                                                    <del>{{ product.price | naira }}</del>
+                                                                    {% else %}
+                                                                    <span class="theme-color">
+                                                                        {{ product.price | naira }}
+                                                                    </span>
+                                                                    {% endif %}
+                                                                </h6>
+                                                            </td>
+                                                            <td>
+                                                                <h6>{{ product.quantity_sold }}</h6>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-xxl-6">
+                                            <div class="order-tab dashboard-bg-box">
+                                                <div class="dashboard-title mb-4">
+                                                    <h3>Recent Orders</h3>
+                                                </div>
+
+                                                <div class="table-responsive">
+                                                    <table class="table order-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">Order ID</th>
+                                                                <th scope="col">Product Name</th>
+                                                                <th scope="col">Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for order in latest_order_items %}
+                                                            <tr>
+                                                                <td class="product-image">{{ order.order.ref }}</td>
+                                                                <td>
+                                                                    <h6>{{ order.product.name }}</h6>
+                                                                </td>
+                                                                <td>
+                                                                    <label
+                                                                            class="{% if order.status == 'Ordered' %}
+                                                                            danger{% elif order.status == 'Shipped' %}
+                                                                            info{% else %}success{% endif %}"
+                                                                    >
+                                                                        {{order.status}}
+                                                                    </label>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+
+
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+</div>
+{% endblock %}

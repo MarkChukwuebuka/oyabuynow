@@ -182,9 +182,9 @@ class ProductService(CustomRequestUtil):
         product.deleted_by = self.auth_user
         product.save()
 
-        message = "Product was deleted successfully"
+        message = None
 
-        return message, None
+        return message, "Product was deleted successfully"
 
     def fetch_single_by_slug(self, product_slug):
         product = self.get_base_query().filter(slug=product_slug).first()

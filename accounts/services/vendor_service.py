@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.utils import timezone
 from email_validator import validate_email
 
@@ -167,5 +167,15 @@ class VendorService(CustomRequestUtil):
         message = "Your vendor profile was updated"
 
         return message, None
+
+    def update_vendor_rating(self, product):
+        from products.models import Product
+
+        avg_rating = (
+                Product.available_objects.filter(created_by=product.created_by)
+                .aggregate(Avg("rating"))["rating__avg"] or 0
+        )
+
+        VendorProfile.available_objects.filter(user=product.created_by).update(rating=avg_rating)
 
 

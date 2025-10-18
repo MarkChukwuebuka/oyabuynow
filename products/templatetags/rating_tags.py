@@ -1,20 +1,20 @@
 from django import template
 import math
-from products.models import Product
+from products.models import Product, ProductReview
 from products.services.review_service import get_rating_breakdown
 
 register = template.Library()
 
 
 @register.inclusion_tag("./frontend/partials/rating_stars.html")
-def show_rating(product=None, id=None, vendor_id=None, show_count=True, rating=None):
+def show_rating(product=None, id=None, vendor=None, show_count=True, rating=None):
     """
     Render star rating (supports half stars).
 
     Args:
         product: Product instance (preferred).
         id: Product ID (fallback if product not provided).
-        vendor_id: Optional vendor ID (placeholder for vendor-specific ratings).
+        vendor: Optional vendor (placeholder for vendor-specific ratings).
         show_count: Whether to include total reviews count (default: True).
         rating: Explicit rating value (overrides product.rating if provided).
     """
@@ -27,11 +27,17 @@ def show_rating(product=None, id=None, vendor_id=None, show_count=True, rating=N
         # TODO: handle vendor_id logic if required
         rating = getattr(product, "rating", None)
         total_reviews = product.reviews.count() if (product and show_count) else 0
+
     else:
         # Explicit rating passed — don’t query product unless needed
         total_reviews = 0
         if product:
             total_reviews = product.reviews.count() if show_count else 0
+
+        if vendor:
+            total_reviews = ProductReview.available_objects.filter(
+                product__created_by=vendor.user
+            ).count()
 
     # ✅ No rating available → return 5 empty stars
     if not rating:

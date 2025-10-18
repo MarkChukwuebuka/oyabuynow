@@ -1,4 +1,6 @@
 from django.db.models import F, Q, Avg, Count
+
+from accounts.services.vendor_service import VendorService
 from services.util import CustomRequestUtil
 
 
@@ -25,6 +27,8 @@ class ProductReviewService(CustomRequestUtil):
 
         product.rating = average_rating
         product.save(update_fields=['rating'])
+
+        VendorService(self.request).update_vendor_rating(product)
 
         if not is_created:
             return "You've updated your review on this product", None

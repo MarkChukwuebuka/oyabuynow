@@ -449,7 +449,7 @@
                                 <div class="vendor-name">
                                     <h5 class="fw-500">{{product.created_by.vendor_profile.store_name}}</h5>
 
-                                    {% show_rating vendor_id=product.created_by.vendor_profile.id %}
+                                    {% show_rating rating=product.created_by.vendor_profile.rating vendor=product.created_by.vendor_profile %}
 
                                 </div>
                             </div>

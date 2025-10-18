@@ -268,6 +268,6 @@ def customer_required(view_func):
         if user.user_type == UserTypes.admin:
             return redirect("admin")
 
-        return redirect("vendor-dashboard")
+        return redirect("vendor-dashboard-home")
 
     return _wrapped_view

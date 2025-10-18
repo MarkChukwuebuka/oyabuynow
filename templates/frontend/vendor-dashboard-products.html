@@ -1,0 +1,123 @@
+{% extends "./vendor-dashboard-base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block dashboard_content %}
+<div class="product-tab">
+  <div class="title">
+    <h2>All Products</h2>
+    <span class="title-leaf">
+      <svg class="icon-width bg-gray">
+        <use xlink:href="https://themes.pixelstrap.com/fastkart/assets/svg/leaf.svg#leaf"></use>
+      </svg>
+    </span>
+  </div>
+
+  <div class="table-responsive dashboard-bg-box">
+    {% if vendor_products %}
+      <table class="table product-table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Images</th>
+                                                    <th scope="col">Product Name</th>
+                                                    <th scope="col">Price</th>
+                                                    <th scope="col">Stock</th>
+                                                    <th scope="col">Sales</th>
+                                                    <th scope="col">Edit / Delete</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for product in vendor_products %}
+                                                <tr>
+                                                    <td class="product-image">
+                                                        {% with product.product_media.first as first_media %}
+                                                            {% if first_media %}
+                                                                <img src="{{first_media.image.url}}"
+                                                                class="blur-up lazyload" alt="{{product.name}}" height="50px" width="50px">
+                                                            {% endif %}
+                                                        {% endwith %}
+                                                    </td>
+                                                    <td>
+                                                        <h6>{{ product.name }}</h6>
+                                                    </td>
+                                                    <td>
+                                                        <h6>
+                                                        {% if product.percentage_discount %}
+                                                        <span class="theme-color fw-bold">
+                                                            {{ product.discounted_price | naira }}
+                                                        </span>
+                                                        <del>{{ product.price | naira }}</del>
+                                                        {% else %}
+                                                        <span class="theme-color fw-bold">
+                                                            {{ product.price | naira }}
+                                                        </span>
+                                                        {% endif %}
+                                                        </h6>
+                                                    </td>
+                                                    <td>
+                                                        <h6>{{product.stock}}</h6>
+                                                    </td>
+                                                    <td>
+                                                        <h6>{{ product.quantity_sold }}</h6>
+                                                    </td>
+                                                    <td class="edit-delete">
+                                                        <i data-feather="edit" class="edit"></i>
+                                                        <i data-feather="trash-2" class="delete"></i>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+
+
+                                            </tbody>
+                                        </table>
+
+
+                                        <nav class="custom-pagination">
+                                            <ul class="pagination justify-content-center">
+                                                <!-- Previous -->
+                                                {% if vendor_products.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ vendor_products.previous_page_number }}">
+                                                            <i class="fa-solid fa-angles-left"></i>
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+                                                    </li>
+                                                {% endif %}
+
+                                                <!-- Page Numbers -->
+                                                {% for num in vendor_products.paginator.page_range %}
+                                                    {% if vendor_products.number == num %}
+                                                        <li class="page-item active">
+                                                            <span class="page-link">{{ num }}</span>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="page-item">
+                                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <!-- Next -->
+                                                {% if vendor_products.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ vendor_products.next_page_number }}">
+                                                            <i class="fa-solid fa-angles-right"></i>
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+    {% else %}
+      <h2>You have no products yet ...</h2>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

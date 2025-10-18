@@ -1,0 +1,105 @@
+{% extends "./vendor-dashboard-base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block dashboard_content %}
+<div class="dashboard-order">
+  <div class="title">
+    <h2>All Orders</h2>
+    <span class="title-leaf title-leaf-gray">
+      <svg class="icon-width bg-gray">
+        <use xlink:href="https://themes.pixelstrap.com/fastkart/assets/svg/leaf.svg#leaf"></use>
+      </svg>
+    </span>
+  </div>
+
+  {% if order_items %}
+    <div class="order-tab dashboard-bg-box">
+                                        <div class="table-responsive">
+
+                                            <table class="table order-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Date</th>
+                                                        <th scope="col">Order ID</th>
+                                                        <th scope="col">Product Name</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Price</th>
+                                                        <th scope="col">Quantity</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for order_item in order_items %}
+                                                    <tr>
+                                                        <td class="product-image">{{order_item.order.created_at}}</td>
+                                                        <td class="product-image">{{order_item.order.ref}}</td>
+                                                        <td>
+                                                            <h6>{{ order_item.product.name }}</h6>
+                                                        </td>
+                                                        <td>
+                                                            <label class="{% if order.status == 'Pending' %}
+                                                                            danger{% elif order.status == 'Shipped' %}
+                                                                            info{% else %}success{% endif %}"
+                                                            >{{order_item.status}}</label>
+                                                        </td>
+                                                        <td>
+                                                            <h6>{{order_item.price | naira}}</h6>
+                                                        </td>
+                                                        <td>
+                                                            <h6>{{ order_item.quantity }}</h6>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                        <nav class="custom-pagination">
+                                            <ul class="pagination justify-content-center">
+                                                <!-- Previous -->
+                                                {% if order_items.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ order_items.previous_page_number }}">
+                                                            <i class="fa-solid fa-angles-left"></i>
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+                                                    </li>
+                                                {% endif %}
+
+                                                <!-- Page Numbers -->
+                                                {% for num in order_items.paginator.page_range %}
+                                                    {% if order_items.number == num %}
+                                                        <li class="page-item active">
+                                                            <span class="page-link">{{ num }}</span>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="page-item">
+                                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <!-- Next -->
+                                                {% if order_items.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page={{ order_items.next_page_number }}">
+                                                            <i class="fa-solid fa-angles-right"></i>
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="page-item disabled">
+                                                        <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    </div>
+  {% else %}
+    <p>No orders yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

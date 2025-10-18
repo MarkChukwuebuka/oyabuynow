@@ -1,0 +1,70 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block content %}
+<section class="user-dashboard-section section-b-space">
+  <div class="container-fluid-lg">
+    <div class="row">
+      <div class="col-xxl-3 col-lg-4">
+        <div class="dashboard-left-sidebar">
+          <div class="close-button d-flex d-lg-none">
+            <button class="close-sidebar"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="profile-box">
+            <div class="cover-image">
+              <img src="{% static 'frontend/assets/images/inner-page/cover-img.jpg' %}" class="img-fluid blur-up lazyload" alt="{{vendor.business_name}}">
+            </div>
+            <div class="profile-contain">
+              <div class="profile-image position-relative">
+                <img src="{{ vendor.business_logo.url }}" class="blur-up lazyload update_img" alt="{{vendor.business_name}}">
+              </div>
+              <div class="profile-name mt-4">
+                <h3>{{vendor.business_name}}</h3>
+                <h6 class="text-content">{{vendor.business_email}}</h6>
+              </div>
+            </div>
+          </div>
+
+          <ul class="nav nav-pills user-nav-pills">
+            <li class="nav-item">
+              <a href="{% url 'vendor-dashboard-home' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor-dashboard-home' %}active{% endif %}">
+                <i data-feather="home"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'vendor-dashboard-products' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor-dashboard-products' %}active{% endif %}">
+                <i data-feather="shopping-bag"></i> Products
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'vendor-dashboard-orders' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor-dashboard-orders' %}active{% endif %}">
+                <i data-feather="box"></i> Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'vendor-dashboard-profile' %}" class="nav-link {% if request.resolver_match.url_name == 'vendor-dashboard-profile' %}active{% endif %}">
+                <i data-feather="user"></i> Profile
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'logout' %}" class="nav-link">
+                <i data-feather="log-out"></i> Log Out
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-xxl-9 col-lg-8">
+        <button class="btn left-dashboard-show btn-animation btn-md fw-bold d-block mb-4 d-lg-none">Show Menu</button>
+        <div class="dashboard-right-sidebar">
+          {% block dashboard_content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

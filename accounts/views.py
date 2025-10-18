@@ -125,7 +125,7 @@ class UserDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
 
 class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
-    template_name = 'frontend/vendor-dashboard.html'
+    template_name = 'frontend/vendor-dashboard-home.html'
     context_object_name = 'vendor'
 
     extra_context_data = {
@@ -159,11 +159,7 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
 
         latest_order_items = order_service.fetch_list()[:5]
         trending_products = product_service.fetch_list(user=self.auth_user).order_by('-views')[:5]
-        vendor_products = product_service.fetch_list(user=self.auth_user, paginate=True)
-        order_items = order_service.fetch_list(paginate=True)
 
-        self.extra_context_data["vendor_products"] = vendor_products
-        self.extra_context_data["order_items"] = order_items
         self.extra_context_data["shipped_orders"] = shipped_orders
         self.extra_context_data["delivered_orders"] = delivered_orders
         self.extra_context_data["trending_products"] = trending_products
@@ -176,9 +172,74 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
         return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
 
 
+
+
+
+
+class VendorProductListView(LoginRequiredMixin, View, CustomRequestUtil):
+    template_name = 'frontend/vendor-dashboard-products.html'
+    context_object_name = 'vendor'
+
+    extra_context_data = {
+        "title": "Products",
+    }
+
+    @vendor_required
+    def get(self, request, *args, **kwargs):
+        vendor_service = VendorService(self.request)
+        product_service = ProductService(request)
+
+
+
+        vendor_products = product_service.fetch_list(user=self.auth_user, paginate=True)
+
+        self.extra_context_data["vendor_products"] = vendor_products
+
+
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
+
+
+
+class VendorOrdersView(LoginRequiredMixin, View, CustomRequestUtil):
+    template_name = 'frontend/vendor-dashboard-orders.html'
+    context_object_name = 'vendor'
+
+    extra_context_data = {
+        "title": "My Orders",
+    }
+
+    @vendor_required
+    def get(self, request, *args, **kwargs):
+        vendor_service = VendorService(self.request)
+        order_service = OrderItemService(request)
+
+        order_items = order_service.fetch_list(paginate=True)
+
+        self.extra_context_data["order_items"] = order_items
+
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
+
+
+
+class VendorProfileView(LoginRequiredMixin, View, CustomRequestUtil):
+    template_name = 'frontend/vendor-dashboard-profile.html'
+    context_object_name = 'vendor'
+
+    extra_context_data = {
+        "title": "Vendor Profile",
+    }
+
+    @vendor_required
+    def get(self, request, *args, **kwargs):
+        vendor_service = VendorService(self.request)
+
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
+
+
+
     def post(self, request, *args, **kwargs):
         self.template_name = None
-        self.template_on_error = 'frontend/vendor-dashboard.html'
+        self.template_on_error = 'frontend/vendor-dashboard-profile.html'
         vendor_service = VendorService(self.request)
 
         payload = {
@@ -190,8 +251,11 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
         }
 
         return self.process_request(
-            request, target_view="vendor-dashboard", target_function=vendor_service.update_single, payload=payload
+            request, target_view="vendor-dashboard-profile", target_function=vendor_service.update_single, payload=payload
         )
+
+
+
 
 
 

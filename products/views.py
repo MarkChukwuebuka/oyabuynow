@@ -164,14 +164,16 @@ class CreateProductView(View, CustomRequestUtil):
 
         payload['media'] = request.FILES.getlist('media')
 
-        print(request.FILES.get('media'))
-        print(request.FILES.getlist('media'))
-        print(request.POST.get('add_product_to_sales'))
-
 
         return self.process_request(
             request, target_function=product_service.create_single,
             target_view="add-product", payload=payload
+        )
+
+    def delete(self, request, *args, **kwargs):
+        product_service = ProductService(request)
+        return self.process_request(
+            request, product_service.delete_single, chapter_id=kwargs.get("pk")
         )
 
 

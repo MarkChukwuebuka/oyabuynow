@@ -89,6 +89,7 @@ class VendorProfileAdmin(admin.ModelAdmin):
                 "bank_name",
                 "account_number",
                 "status",
+                "rating"
             ),
         }),
         ("Media Uploads", {
