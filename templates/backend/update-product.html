@@ -1,0 +1,372 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+#image_preview img {
+  transition: transform 0.2s ease;
+}
+#image_preview img:hover {
+  transform: scale(1.05);
+}
+.position-relative .btn-delete {
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="row">
+        <div class="col-sm-8 m-auto">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-header-2">
+                <h5>Update Product</h5>
+              </div>
+
+              <form class="theme-form theme-form-2 mega-form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Product Name -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Product Name</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="text" name="name" placeholder="Product Name"
+                      value="{{ product.name }}" required />
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Price</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="number" name="price" placeholder="0.00"
+                      value="{{ product.price }}" required />
+                  </div>
+                </div>
+
+                <!-- Discount -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Percentage Discount</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="number" name="percentage_discount"
+                      value="{{ product.percentage_discount }}" placeholder="0.00" />
+                  </div>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-4 row align-items-center">
+                  <label class="col-sm-3 col-form-label form-label-title">Category</label>
+                  <div class="col-sm-9">
+                    <select id="category-select" class="js-example-basic-single w-100" name="category">
+                      <option disabled>Category Menu</option>
+                      {% for category in categories %}
+                        <option value="{{ category.id }}" {% if product.category.id == category.id %}selected{% endif %}>
+                          {{ category.name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Subcategories -->
+                <div class="mb-4 row align-items-center">
+                  <label class="col-sm-3 col-form-label form-label-title">SubCategory</label>
+                  <div class="col-sm-9">
+                    <select id="subcategory-select" class="js-example-basic-multiple w-100" name="subcategories" multiple>
+                      {% for sub in subcategories %}
+                        <option value="{{ sub.id }}" {% if sub in product.subcategories.all %}selected{% endif %}>
+                          {{ sub.name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Stock -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Stock</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="number" name="stock" value="{{ product.stock }}" required />
+                  </div>
+                </div>
+
+
+
+                <!-- Short Description -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Short Description</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="text" name="short_description"
+                      value="{{ product.short_description }}" />
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Description</label>
+                  <div class="col-sm-9">
+                    <textarea id="product-description"
+                       class="form-control" name="description">
+                      {{ product.description|safe }}
+                    </textarea>
+                  </div>
+                </div>
+
+                <!-- Tags -->
+                {% if tags %}
+                <div class="mb-4 row align-items-center">
+                  <label class="col-sm-3 col-form-label form-label-title">Tags</label>
+                  <div class="col-sm-9">
+                    <select id="tags" class="js-example-basic-multiple w-100" name="tags" multiple>
+                      {% for tag in tags %}
+                        <option value="{{ tag.id }}" {% if tag in product.tags.all %}selected{% endif %}>{{ tag.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Brands -->
+                {% if brands %}
+                <div class="mb-4 row align-items-center">
+                  <label class="col-sm-3 col-form-label form-label-title">Brands</label>
+                  <div class="col-sm-9">
+                    <select id="brands" class="js-example-basic-multiple w-100" name="brands" multiple>
+                      {% for brand in brands %}
+                        <option value="{{ brand.id }}" {% if brand in product.brands.all %}selected{% endif %}>
+                          {{ brand.name }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                {% endif %}
+
+                <!-- Colors -->
+                {% if colors %}
+                <div class="mb-4 row align-items-center">
+                  <label class="col-sm-3 col-form-label form-label-title">Colors</label>
+                  <div class="col-sm-9">
+                    <select class="js-example-basic-multiple w-100" name="colors" multiple>
+                      {% for color in colors %}
+                        <option value="{{ color.id }}" {% if color in product.colors.all %}selected{% endif %}>
+                          {{ color.name }} ({{ color.hex_code }})
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                {% endif %}
+
+                <div class="card mt-4">
+                  <div class="card-body">
+                    <div class="card-header-2">
+                      <h5>Sales</h5>
+                    </div>
+
+                    <div class="row align-items-center mb-3">
+                      <label class="col-sm-3 col-form-label form-label-title">Add to Sales</label>
+                      <div class="col-sm-9">
+                        <label class="switch">
+                          <!-- Hidden input ensures Django always receives a value even if unchecked -->
+                          <input type="hidden" name="add_product_to_sales" value="False" />
+
+                          <!-- Checkbox checked state is set dynamically -->
+                          <input
+                            type="checkbox"
+                            name="add_product_to_sales"
+                            value="True"
+                            {% if product.add_product_to_sales %}checked{% endif %}
+                          />
+                          <span class="switch-state"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="row align-items-center mb-3">
+                      <label class="col-sm-3 col-form-label form-label-title">Start Date/Time</label>
+                      <div class="col-sm-9">
+                        <input
+                          type="datetime-local"
+                          name="sale_start"
+                          class="form-control"
+                          value="{% if product.sale_start %}{{ product.sale_start|date:'Y-m-d\\TH:i' }}{% endif %}"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="row align-items-center">
+                      <label class="col-sm-3 col-form-label form-label-title">End Date/Time</label>
+                      <div class="col-sm-9">
+                        <input
+                          type="datetime-local"
+                          name="sale_end"
+                          class="form-control"
+                          value="{% if product.sale_end %}{{ product.sale_end|date:'Y-m-d\\TH:i' }}{% endif %}"
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Media -->
+                <div class="card mt-4">
+                  <div class="card-body">
+                    <div class="card-header-2">
+                      <h5>Product Images</h5>
+                    </div>
+
+                    <!-- Existing Images -->
+                    <div id="image_preview" class="mt-3 d-flex flex-wrap gap-2">
+                      {% for image in product.product_media.all %}
+                        <div class="position-relative" data-image-id="{{ image.id }}">
+                          <img src="{{ image.image.url }}" alt="{{ image.image.name }}" class="rounded border"
+                               style="width: 100px; height: 100px; object-fit: cover;">
+                          <button type="button" class="btn-delete position-absolute top-0 end-0 m-1"
+                                  onclick="deleteExistingImage('{{ image.id }}')">&times;</button>
+                        </div>
+                      {% endfor %}
+                    </div>
+
+                    <!-- Upload New -->
+                    <div class="mt-3">
+                      <input type="file" id="product_images" name="media" class="form-control" accept="image/*" multiple />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Sizes</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="text" name="sizes" value="{{ product.sizes }}" required />
+                  </div>
+                </div>
+
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Weight</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="number" name="weight" value="{{ product.weight }}" required />
+                  </div>
+                </div>
+
+
+                <div class="mb-4 row align-items-center">
+                  <label class="form-label-title col-sm-3 mb-0">Dimensions</label>
+                  <div class="col-sm-9">
+                    <input class="form-control" type="text" name="dimensions" value="{{ product.dimensions }}" required />
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-end mt-4 mb-5">
+                  <button type="submit" class="btn btn-primary">Update Product</button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Preview new uploads
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('product_images');
+  const previewContainer = document.getElementById('image_preview');
+
+  input.addEventListener('change', function () {
+    Array.from(input.files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const preview = document.createElement('div');
+        preview.classList.add('position-relative');
+        preview.innerHTML = `
+          <img src="${e.target.result}" class="rounded border"
+               style="width: 100px; height: 100px; object-fit: cover;">
+          <button type="button" class="btn-delete position-absolute top-0 end-0 m-1">&times;</button>
+        `;
+        preview.querySelector('button').addEventListener('click', () => preview.remove());
+        previewContainer.appendChild(preview);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+});
+
+// Delete existing images
+function deleteExistingImage(imageId) {
+  fetch(`/api/delete-product-image/${imageId}/`, {
+    method: 'DELETE',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.querySelector(`[data-image-id="${imageId}"]`).remove();
+      } else {
+        alert('Failed to delete image');
+      }
+    })
+    .catch(err => console.error(err));
+}
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const categorySelect = document.getElementById("category-select");
+    const subcategorySelect = document.getElementById("subcategory-select");
+
+    if (!categorySelect) {
+        console.error("Category select not found");
+        return;
+    }
+
+    categorySelect.addEventListener("change", function() {
+        const categoryId = this.value;
+
+        if (!categoryId) return;
+
+        fetch(`/api/get-subcategories/${categoryId}/`)
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to fetch subcategories");
+                return response.json();
+            })
+            .then(data => {
+                subcategorySelect.innerHTML = "";
+
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const option = document.createElement("option");
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement("option");
+                    option.disabled = true;
+                    option.textContent = "No subcategories found";
+                    subcategorySelect.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error("Error loading subcategories:", error);
+            });
+    });
+});
+</script>
+{% endblock content %}

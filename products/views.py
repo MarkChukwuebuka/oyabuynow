@@ -13,7 +13,7 @@ from products.services.wishlist_service import WishlistService
 from services.util import CustomRequestUtil
 
 
-class RetrieveUpdateDeleteProductView(View, CustomRequestUtil):
+class RetrieveProductView(View, CustomRequestUtil):
     template_name = "frontend/product-detail.html"
     context_object_name = 'product'
     template_on_error = "frontend/product-detail.html"
@@ -170,10 +170,88 @@ class CreateProductView(View, CustomRequestUtil):
             target_view="add-product", payload=payload
         )
 
+
+
+class UpdateDeleteProductView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Update Product"
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.template_name = "backend/update-product.html"
+        self.context_object_name = "product"
+        color_service = ColorService(request)
+        brand_service = BrandService(request)
+        tag_service = TagService(request)
+        product_service = ProductService(request)
+
+        self.extra_context_data["colors"] = color_service.fetch_list()
+        self.extra_context_data["brands"] = brand_service.fetch_list()
+        self.extra_context_data["tags"] = tag_service.fetch_list()
+
+        return self.process_request(
+            request, target_view="update-product", target_function=product_service.fetch_single,
+            product_id=kwargs.get("product_id")
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.template_on_error = "backend/add-new-product.html"
+        subcategory_service = SubcategoryService(request)
+        tag_service = TagService(request)
+        color_service = ColorService(request)
+        brand_service = BrandService(request)
+        category_service = CategoryService(request)
+        product_service = ProductService(request)
+
+        payload = {
+            'name' : request.POST.get('name'),
+            'price' : request.POST.get('price'),
+            'percentage_discount' : request.POST.get('percentage_discount', None),
+            'short_description' : request.POST.get('short_description'),
+            'description' : request.POST.get('description'),
+            'stock' : request.POST.get('stock'),
+            'weight' : request.POST.get('weight'),
+            'sale_start' : request.POST.get('sale_start'),
+            'dimensions' : request.POST.get('dimensions'),
+            'sale_end' : request.POST.get('sale_end'),
+            'add_product_to_sales' : request.POST.get('add_product_to_sales'),
+            'sizes' : request.POST.get('sizes'),
+        }
+
+        subcategory_ids = request.POST.getlist('subcategories')
+        if subcategory_ids:
+            payload['subcategories'] = subcategory_service.fetch_by_ids(subcategory_ids)
+
+        tag_ids = request.POST.getlist('tags')
+        if tag_ids:
+            payload['tags'] = tag_service.fetch_by_ids(tag_ids)
+
+        color_ids = request.POST.getlist('colors')
+        if color_ids:
+            payload['colors'] = color_service.fetch_by_ids(color_ids)
+
+        brand_id = request.POST.get('brand')
+        if brand_id:
+            payload['brand'], _ = brand_service.fetch_single_by_id(brand_id)
+
+        category_id = request.POST.get('category')
+        if category_id:
+            payload['category'], _ = category_service.fetch_single_by_id(category_id)
+
+        payload['media'] = request.FILES.getlist('media')
+
+
+        return self.process_request(
+            request, target_view="vendor-dashboard-products", target_function=product_service.update_single,
+            payload=payload,
+            product_id=kwargs.get("product_id")
+        )
+
     def delete(self, request, *args, **kwargs):
         product_service = ProductService(request)
+
         return self.process_request(
-            request, product_service.delete_single, chapter_id=kwargs.get("pk")
+            request, product_service.delete_single, product_id=kwargs.get("product_id")
         )
 
 

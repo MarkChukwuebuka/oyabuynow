@@ -170,6 +170,70 @@ class ProductService(CustomRequestUtil):
         return product, None
 
 
+    def update_single(self, payload, product_id):
+        product, _ = self.fetch_single(product_id)
+        if not product:
+            return None, _
+
+        if product.created_by != self.auth_user:
+            return None, "Invalid Action"
+
+        product.name = payload.get("name") or product.name
+        product.price = payload.get("price") or product.price
+        product.percentage_discount = payload.get("percentage_discount") or product.percentage_discount
+        product.short_description = payload.get("short_description") or product.short_description
+        product.description = payload.get("description") or product.description
+        product.stock = payload.get("stock") or product.stock
+        product.weight = payload.get("weight") or product.weight
+        product.dimensions = payload.get("dimensions") or product.dimensions
+        product.sizes = payload.get("sizes") or product.sizes
+        product.add_product_to_sales = payload.get("add_product_to_sales") or product.add_product_to_sales
+        product.sale_end = payload.get("sale_end") or product.sale_end
+        product.sale_start = payload.get("sale_start") or product.sale_start
+        product.category = payload.get("category") or product.category
+        product.updated_by = self.auth_user
+        product.updated_at = timezone.now()
+
+        product.save()
+
+        if "colors" in payload:
+            colors = payload.get("colors")
+            if isinstance(colors, (list, tuple)):
+                product.colors.set(colors)
+            elif not colors:
+                product.colors.clear()
+
+        if "tags" in payload:
+            tags = payload.get("tags")
+            if isinstance(tags, (list, tuple)):
+                product.tags.set(tags)
+            elif not tags:
+                product.tags.clear()
+
+        if "subcategories" in payload:
+            subcategories = payload.get("subcategories")
+            if isinstance(subcategories, (list, tuple)):
+                product.sub_categories.set(subcategories)
+            elif not subcategories:
+                product.sub_categories.clear()
+
+        media_files = payload.get("media")
+        if media_files:
+            # Optional: clear existing images if desired
+            # Upload.objects.filter(product=product).delete()
+
+            for img in media_files:
+                Upload.objects.create(
+                    image=img,
+                    product=product,
+                    created_by=self.auth_user
+                )
+
+        message = "Product was updated successfully"
+
+        return message, None
+
+
     def delete_single(self, product_id):
         product = self.get_base_query().filter(id=product_id).first()
         if not product:
