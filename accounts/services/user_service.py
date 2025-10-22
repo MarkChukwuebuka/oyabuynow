@@ -52,9 +52,8 @@ class UserService(CustomRequestUtil):
 
     def find_user_by_email(self, email):
         user = User.objects.filter(email__iexact=email).first()
-        vendor = VendorProfile.objects.filter()
         if not user:
-            return None, self.make_error(f"User with email '{email}' not found")
+            return None, self.make_error(f"User with email not found")
 
         return user, None
 

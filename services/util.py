@@ -49,7 +49,7 @@ class CustomRequestUtil(CustomPermissionRequired):
     template_name = None
     template_on_error = None
     extra_context_data: dict = None
-    page_size = 100
+    view_on_error = None
 
     def __init__(self, request):
         self.request = request
@@ -130,8 +130,10 @@ class CustomRequestUtil(CustomPermissionRequired):
         if error_detail:
             messages.error(self.request, error_detail)
             if self.template_on_error:
-
                 return render(self.request, self.template_on_error, self.context)
+
+            if self.view_on_error:
+                return redirect(self.view_on_error)
         else:
             if isinstance(response, str):
                 messages.success(self.request, response)

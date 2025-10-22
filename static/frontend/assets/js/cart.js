@@ -1,28 +1,3 @@
-function showToast(message, type = "info") {
-    const container = document.querySelector(".message-container");
-    if (!container) return;
-
-    const toast = document.createElement("div");
-    toast.className = `message-toast ${type}`;
-    toast.setAttribute("role", "alert");
-
-    toast.innerHTML = `
-        <div class="message-body">${message}</div>
-        <button type="button" class="close-button" aria-label="Close" title="Close">×</button>
-    `;
-
-    // Close button handler
-    toast.querySelector(".close-button").addEventListener("click", () => {
-        toast.remove();
-    });
-
-    // Auto remove after 5s
-    setTimeout(() => {
-        toast.remove();
-    }, 5000);
-
-    container.appendChild(toast);
-}
 
 
 function updateCartCounter(newCount) {
@@ -61,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return response.json();
             })
             .then(data => {
-                console.log("Server response:", data);
 
                 if (data.success) {
                     if (isAdded) {
@@ -121,7 +95,7 @@ function updateCart(productId, quantity, url) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Success:', data);
+
         if (data.success) {
             showToast(data.message, "success");
             if (data.cart_count !== undefined) {

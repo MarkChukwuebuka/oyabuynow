@@ -83,7 +83,7 @@
                                 <div>
                                     <div class="timer-notification">
                                         <h6>Something you love is now on sale!
-                                            <a href="shop-left-sidebar.html" class="text-white">Buy Now
+                                            <a href="{% url 'shop' %}" class="text-white">Buy Now
                                                 !</a>
                                         </h6>
                                     </div>
@@ -546,6 +546,33 @@
 
     <script>
         const csrfToken = '{{ csrf_token }}';
+
+        function showToast(message, type = "info") {
+        const container = document.querySelector(".message-container");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = `message-toast ${type}`;
+        toast.setAttribute("role", "alert");
+
+        toast.innerHTML = `
+            <div class="message-body">${message}</div>
+            <button type="button" class="close-button" aria-label="Close" title="Close">×</button>
+        `;
+
+        // Close button handler
+        toast.querySelector(".close-button").addEventListener("click", () => {
+            toast.remove();
+        });
+
+        // Auto remove after 5s
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+
+        container.appendChild(toast);
+    }
+
     </script>
 
 

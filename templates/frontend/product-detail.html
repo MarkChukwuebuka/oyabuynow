@@ -447,8 +447,9 @@
                                 </div>
 
                                 <div class="vendor-name">
-                                    <h5 class="fw-500">{{product.created_by.vendor_profile.store_name}}</h5>
-
+                                    <a href="{% url 'vendor-store' product.created_by.vendor_profile.id %}">
+                                        <h5 class="fw-500">{{product.created_by.vendor_profile.store_name}}</h5>
+                                    </a>
                                     {% show_rating rating=product.created_by.vendor_profile.rating vendor=product.created_by.vendor_profile %}
 
                                 </div>

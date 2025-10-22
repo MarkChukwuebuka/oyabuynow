@@ -49,23 +49,15 @@ class AuthService(CustomRequestUtil):
         if error:
             return None, error
 
-        # Here you would typically generate a password reset token and send an email.
-        # For simplicity, we'll skip that part.
-        otp = self.create_password_reset_request(user)
-        #TODO: Implement email sending logic here.
+        self.create_password_reset_request(user)
 
         message = "If an account with that email exists, a password reset link has been sent."
 
         return message, None
 
-    def reset_password(self, payload):
+    def verify_otp(self, payload):
         email = payload.get("email")
         otp = payload.get("otp")
-        new_password = payload.get("new_password")
-        confirm_password = payload.get("confirm_password")
-
-        if new_password != confirm_password:
-            return None, self.make_error("Password mismatch")
 
         user, error = UserService(self.request).find_user_by_email(email)
         if error:
@@ -77,8 +69,24 @@ class AuthService(CustomRequestUtil):
             if not compare_password(otp, password_reset_request.otp):
                 return None, "OTP is not valid"
 
-            if password_reset_request.is_used or check_otp_time_expired(password_reset_request.expires_at):
+            if password_reset_request.is_used or password_reset_request.is_expired:
                 return None, "OTP has expired"
+
+        return "Verification successful", None
+
+
+
+    def create_new_password(self, payload):
+        email = payload.get("email")
+        new_password = payload.get("new_password")
+        confirm_password = payload.get("confirm_password")
+
+        if new_password != confirm_password:
+            return None, self.make_error("Password mismatch")
+
+        user, error = UserService(self.request).find_user_by_email(email)
+        if error:
+            return None, error
 
         user.set_password(new_password)
         user.save()
@@ -101,4 +109,24 @@ class AuthService(CustomRequestUtil):
             expires_at=timezone.now()
         )
 
+        # TODO: Implement email sending logic here.
+
         return otp
+
+    def has_exceeded_otp_limit(self, user, limit=3, minutes=10):
+        """
+        Returns True if the user has requested OTP more than `limit`
+        times within the past `minutes`.
+        """
+        from django.utils import timezone
+        from datetime import timedelta
+
+        time_threshold = timezone.now() - timedelta(minutes=minutes)
+        recent_requests = PasswordResetRequest.objects.filter(
+            user=user,
+            created_at__gte=time_threshold
+        ).count()
+
+        return recent_requests >= limit
+
+

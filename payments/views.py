@@ -58,6 +58,7 @@ def paystack_verify_payment(request, order_id):
                 order.ref = reference
                 order.save(update_fields=["payment_status", "payment_method", "ref"])
                 cart.clear()
+                del request.session['order_id']
 
                 for item in order.items.all():
                     product_service.update_quantity_sold(item.product, item.quantity)
@@ -151,7 +152,6 @@ def check_out(request):
                 price=item_cost,
                 quantity=quantity_in_cart
             )
-        #     TODO: update quantity sold
 
         order.total_cost = total_cost
         order.save()

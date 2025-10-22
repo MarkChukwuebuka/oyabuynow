@@ -1,0 +1,197 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- OTP Verification section start -->
+<section class="log-in-section section-b-space forgot-section">
+    <div class="container-fluid-lg w-100">
+        <div class="row">
+            <!-- Illustration -->
+            <div class="col-xxl-6 col-xl-5 col-lg-6 d-lg-block d-none ms-auto">
+                <div class="image-contain">
+                    <img src="{% static 'frontend/assets/images/inner-page/forgot.png' %}" class="img-fluid" alt="OTP Verification">
+                </div>
+            </div>
+
+            <!-- OTP Form -->
+            <div class="col-xxl-4 col-xl-5 col-lg-6 col-sm-8 mx-auto">
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <div class="log-in-box">
+                        <div class="log-in-title text-center">
+                            <h3>Verify Your Identity</h3>
+                            <h4>Enter the OTP sent to your email</h4>
+                        </div>
+
+                        <div class="input-box mt-5">
+                            <form class="row g-4" method="POST" id="otpForm">
+                                {% csrf_token %}
+
+                                <div class="col-12">
+                                    <div class="form-floating theme-form-floating log-in-form text-center">
+                                        <p class="text-muted mb-3">
+                                            We’ve sent a 6-digit verification code to <br>
+                                            <strong>{{ masked_email|default:"your registered email" }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- OTP Input -->
+                                <div class="col-12">
+                                    <div class="otp-inputs d-flex justify-content-center gap-2">
+                                        {% for i in "123456" %}
+                                            <input type="text" maxlength="1" class="form-control text-center otp-field" required>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" name="otp" id="otpInput">
+                                    <input type="hidden" name="email" value="{{email}}">
+                                </div>
+
+                                <!-- Submit -->
+                                <div class="col-12 mt-4">
+                                    <button class="btn btn-animation w-100" type="submit">Verify OTP</button>
+                                </div>
+
+                                <!-- Resend -->
+                                <div class="col-12 text-center mt-3">
+                                    <p class="text-muted mb-0">
+                                        Didn’t receive the code?
+                                        <a href="#" id="resendLink" class="theme-color fw-bold">Resend OTP</a>
+                                        <span id="countdown" class="text-muted" style="margin-left:5px;"></span>
+                                    </p>
+                                </div>
+
+                                <!-- Back to login -->
+                                <div class="col-12 text-center mt-2">
+                                    <a href="{% url 'login' %}" class="forgot-password">Back to Login</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- OTP Verification section end -->
+
+<!-- OTP Input + Resend Timer Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const otpFields = document.querySelectorAll(".otp-field");
+    const otpInput = document.getElementById("otpInput");
+    const resendLink = document.getElementById("resendLink");
+    const countdown = document.getElementById("countdown");
+    let timer;
+
+    // 🔹 Automatically focus next/previous field when typing or deleting
+    otpFields.forEach((field, index) => {
+        field.addEventListener("input", (e) => {
+            const value = e.target.value.replace(/[^0-9]/g, ""); // only digits
+            e.target.value = value;
+
+            if (value && index < otpFields.length - 1) {
+                otpFields[index + 1].focus();
+            }
+            updateHiddenOTP();
+        });
+
+        field.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !field.value && index > 0) {
+                otpFields[index - 1].focus();
+            }
+        });
+
+        field.addEventListener("paste", (e) => {
+            const paste = e.clipboardData.getData("text");
+            if (/^\d{6}$/.test(paste)) {
+                otpFields.forEach((f, i) => f.value = paste[i] || "");
+                otpFields[otpFields.length - 1].focus();
+                updateHiddenOTP();
+            }
+            e.preventDefault();
+        });
+    });
+
+    // 🔹 Update hidden input with concatenated value
+    function updateHiddenOTP() {
+        otpInput.value = Array.from(otpFields).map(f => f.value).join("");
+    }
+
+    // 🔹 Resend OTP cooldown (60s)
+    resendLink.addEventListener("click", async function (e) {
+        e.preventDefault();
+
+        if (resendLink.classList.contains("disabled")) return;
+
+        try {
+            const response = await fetch("{% url 'resend-otp' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: "{{ user_email }}" }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showToast(data.detail || "A new OTP has been sent to your email.", "success");
+                startCountdown(60);
+            } else {
+                showToast(data.detail || "An error occurred, please try again.", "error");
+            }
+        } catch (error) {
+            showToast("Something went wrong. Please try again.", "error");
+        }
+    });
+
+    function startCountdown(seconds) {
+        resendLink.classList.add("disabled");
+        resendLink.style.pointerEvents = "none";
+        resendLink.style.opacity = "0.5";
+
+        countdown.textContent = `(Wait ${seconds}s)`;
+
+        timer = setInterval(() => {
+            seconds--;
+            countdown.textContent = seconds > 0 ? `(Wait ${seconds}s)` : "";
+            if (seconds <= 0) {
+                clearInterval(timer);
+                resendLink.classList.remove("disabled");
+                resendLink.style.pointerEvents = "auto";
+                resendLink.style.opacity = "1";
+                countdown.textContent = "";
+            }
+        }, 1000);
+    }
+
+    // optional: a simple toast for feedback
+    function showToast(message, type = "info") {
+        alert(message); // replace with SweetAlert/Toastify if desired
+    }
+});
+</script>
+
+<style>
+.otp-field {
+    width: 45px;
+    height: 50px;
+    font-size: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: all 0.2s ease-in-out;
+}
+.otp-field:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 5px rgba(255,107,107,0.5);
+}
+.disabled {
+    cursor: not-allowed;
+}
+</style>
+
+{% endblock content %}

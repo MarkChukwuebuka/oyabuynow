@@ -2,15 +2,36 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
+from accounts.services.vendor_service import VendorService
 from products.models import Wishlist, Subcategory
 from products.services.category_brand_service import CategoryService, ColorService, BrandService, TagService, \
     SubcategoryService
 from products.services.product_service import ProductService
 from products.services.review_service import ProductReviewService
 from products.services.wishlist_service import WishlistService
-from services.util import CustomRequestUtil
+from services.util import CustomRequestUtil, vendor_required
+
+
+class VendorProductView(View, CustomRequestUtil):
+    template_name = "frontend/vendor-product-detail.html"
+    context_object_name = 'product'
+    template_on_error = "frontend/vendor-product-detail.html"
+
+    @vendor_required
+    def get(self, request, *args, **kwargs):
+        product_service = ProductService(self.request)
+        product, _ = product_service.fetch_single_by_slug(kwargs.get("product_slug"))
+
+        self.extra_context_data = {
+            "title": f"{product.name}",
+        }
+        return self.process_request(
+            request, target_function=product_service.fetch_single_by_slug, product_slug=kwargs.get("product_slug")
+        )
 
 
 class RetrieveProductView(View, CustomRequestUtil):
@@ -96,6 +117,31 @@ class ListProductView(View, CustomRequestUtil):
             request, target_function=product_service.fetch_list,
             category=category, subcategory=subcategory, paginate=True
         )
+
+
+class ListProductByVendorView(View, CustomRequestUtil):
+
+    def get(self, request, *args, **kwargs):
+        self.template_name = "frontend/vendor-shop.html"
+        self.context_object_name = 'page_obj'
+        self.view_on_error = 'home'
+
+        vendor_id = kwargs.get('vendor_id', None)
+        vendor_service  = VendorService(request)
+        vendor, error = vendor_service.fetch_single(vendor_id)
+
+        if vendor:
+            self.extra_context_data = {
+                'title': f"{vendor.store_name}'s Products",
+                'vendor': vendor
+            }
+
+        return self.process_request(
+            request, target_function=vendor_service.fetch_vendor_products,
+            vendor_id=vendor_id
+        )
+
+
 
 
 class CreateProductView(View, CustomRequestUtil):
@@ -247,12 +293,26 @@ class UpdateDeleteProductView(View, CustomRequestUtil):
             product_id=kwargs.get("product_id")
         )
 
-    def delete(self, request, *args, **kwargs):
-        product_service = ProductService(request)
 
-        return self.process_request(
-            request, product_service.delete_single, product_id=kwargs.get("product_id")
-        )
+
+@csrf_exempt
+def delete_product(request, product_id):
+    product_service = ProductService(request)
+
+    if request.method == "DELETE":
+
+        message, error = product_service.delete_single(product_id)
+
+        if message:
+            return JsonResponse({
+                "success": True,
+                "message": message
+            })
+
+    return JsonResponse({
+        "success": True,
+        "message": "An error occurred"
+    })
 
 
 class CreateCategoryView(View, CustomRequestUtil):

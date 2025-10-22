@@ -108,6 +108,29 @@ class VendorService(CustomRequestUtil):
 
         return vendor, None
 
+    def get_base_query(self):
+        return VendorProfile.available_objects.select_related("user").all()
+
+
+    def fetch_single(self, vendor_id):
+        vendor= self.get_base_query().filter(id=vendor_id).first()
+        if not vendor:
+            return None, self.make_error("Vendor not found.")
+
+        return vendor, None
+
+    def fetch_vendor_products(self, vendor_id):
+        from products.services.product_service import ProductService
+        product_service = ProductService(self.request)
+
+        vendor, error = self.fetch_single(vendor_id)
+        if error:
+            return None, error
+
+        products = product_service.fetch_list(paginate=True, vendor=vendor)
+
+        return products, None
+
 
 
     def update_single(self, payload):

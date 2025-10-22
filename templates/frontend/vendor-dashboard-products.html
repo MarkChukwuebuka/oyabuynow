@@ -29,6 +29,7 @@
                                             </thead>
                                             <tbody>
                                                 {% for product in vendor_products %}
+
                                                 <tr>
                                                     <td class="product-image">
                                                         {% with product.product_media.first as first_media %}
@@ -39,7 +40,9 @@
                                                         {% endwith %}
                                                     </td>
                                                     <td>
-                                                        <h6>{{ product.name }}</h6>
+                                                        <a href="{% url 'vendor-product-detail' product.slug %}">
+                                                            <h6>{{ product.name }}</h6>
+                                                        </a>
                                                     </td>
                                                     <td>
                                                         <h6>
@@ -67,7 +70,9 @@
                                                         </a>
 
                                                         <!-- Delete Button -->
-                                                        <a href="javascript:void()" class="delete-btn" data-id="{{ product.id }}" title="Delete">
+                                                        <a href="javascript:void()" data-bs-toggle="modal"
+                                                            data-bs-target="#delete-product" data-name="{{ product.name }}"
+                                                           data-id="{{ product.id }}" title="Delete">
                                                             <i data-feather="trash-2" class="delete"></i>
                                                         </a>
                                                     </td>
@@ -128,45 +133,93 @@
 </div>
 
 
+<div class="modal fade theme-modal" id="delete-product" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Product</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h3 id="delete-message">Are you sure you want to delete this product?</h3>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn theme-bg-color btn-md fw-bold text-light delete-btn">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    feather.replace(); // reinitialize feather icons if needed
+  const csrfToken = "{{ csrf_token }}";
 
-    // Handle delete action
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', async function () {
-            const productId = this.dataset.id;
+  document.addEventListener("DOMContentLoaded", function () {
+    feather.replace();
 
-            if (!confirm('Are you sure you want to delete this product?')) return;
+    let currentProductId = null;
+    const deleteModal = document.getElementById("delete-product");
+    const deleteMessage = document.getElementById("delete-message");
+    const deleteBtn = deleteModal.querySelector(".delete-btn");
 
-            try {
-                const response = await fetch(`/api/vendor/products/${productId}/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    // Remove row from table
-                    this.closest('tr').remove();
-                    alert('Product deleted successfully.');
-                } else {
-                    const data = await response.json();
-                    alert(`Error: ${data.detail || 'Failed to delete product.'}`);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Network error. Please try again.');
-            }
-        });
+    // Open modal
+    document.querySelectorAll("[data-bs-target='#delete-product']").forEach(link => {
+      link.addEventListener("click", function () {
+        currentProductId = this.dataset.id;
+        const name = this.dataset.name;
+        deleteMessage.textContent = `Are you sure you want to delete "${name}"?`;
+      });
     });
 
+    // Handle delete confirmation
+    deleteBtn.addEventListener("click", async function () {
+      if (!currentProductId) return;
 
-});
+      try {
+        const response = await fetch(`/delete-product/${currentProductId}/`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // Remove the row
+          const link = document.querySelector(`[data-id='${currentProductId}']`);
+          if (link) {
+            const row = link.closest("tr");
+            if (row) row.remove();
+          }
+
+          showToast(data.message || "Product deleted successfully.", "success");
+
+          const modal = bootstrap.Modal.getInstance(deleteModal);
+          modal.hide();
+        } else {
+          const data = await response.json();
+          showToast(data.detail || data.message || "Failed to delete product.", "error");
+        }
+      } catch (error) {
+        showToast("Network error. Please try again.", "error");
+        console.error("Network error:", error);
+      }
+    });
+  });
 </script>
+
 
 {% endblock %}

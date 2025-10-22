@@ -112,6 +112,16 @@ class PasswordResetRequest(BaseModel):
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True)
 
+    def is_expired(self):
+        """Check if the OTP has expired"""
+        return timezone.now() > self.expires_at
+
+    @classmethod
+    def cleanup_expired(cls):
+        """Delete all expired or very old OTPs"""
+        cls.objects.filter(expires_at__lt=timezone.now()).delete()
+        cls.objects.filter(created_at__lt=timezone.now() - timedelta(days=7)).delete()
+
 
 class VendorProfile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='vendor_profile')

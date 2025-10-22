@@ -88,7 +88,7 @@ class ProductService(CustomRequestUtil):
 
         return message, None
 
-    def fetch_list(self, user=None, category=None, subcategory=None, paginate=False):
+    def fetch_list(self, category=None, subcategory=None, paginate=False, vendor=None):
         q = Q()
         if category:
             q &= Q(category__name__iexact=category)
@@ -96,8 +96,8 @@ class ProductService(CustomRequestUtil):
         if subcategory:
             q &= Q(sub_categories__name__iexact=subcategory)
 
-        if user:
-            q &= Q(created_by=user)
+        if vendor:
+            q &= Q(created_by=vendor.user)
 
         products = self.get_base_query().filter(q).distinct()
 
@@ -246,9 +246,9 @@ class ProductService(CustomRequestUtil):
         product.deleted_by = self.auth_user
         product.save()
 
-        message = None
+        message = "Product was deleted successfully"
 
-        return message, "Product was deleted successfully"
+        return message, None
 
     def fetch_single_by_slug(self, product_slug):
         product = self.get_base_query().filter(slug=product_slug).first()

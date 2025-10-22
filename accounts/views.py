@@ -4,6 +4,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, F
 from django.http import JsonResponse
 from django.views import View
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from accounts.models import User
 from accounts.services.auth_service import AuthService
@@ -78,6 +81,7 @@ class UserForgotPasswordView(View, CustomRequestUtil):
     extra_context_data = {
         "title": "Forgot Password",
     }
+    template_on_error = "frontend/forgot-password.html"
 
     def get(self, request, *args, **kwargs):
         return self.process_request(request)
@@ -91,8 +95,62 @@ class UserForgotPasswordView(View, CustomRequestUtil):
             'email': request.POST.get('email')
         }
 
+        request.session["email"] = request.POST.get("email")
+
         return self.process_request(
-            request, target_view="login", target_function=auth_service.signup, payload=payload
+            request, target_view="verify-otp", target_function=auth_service.forgot_password, payload=payload
+        )
+
+
+class VerifyOtpView(View, CustomRequestUtil):
+    template_name = 'frontend/verify-otp.html'
+    extra_context_data = {
+        "title": "Verify OTP",
+    }
+    template_on_error = "frontend/verify-otp.html"
+
+    def get(self, request, *args, **kwargs):
+        self.extra_context_data["email"] = request.session.get("email")
+        return self.process_request(request)
+
+    def post(self, request, *args, **kwargs):
+        auth_service = AuthService(self.request)
+        self.template_name = None
+        self.template_on_error = 'frontend/verify-otp.html'
+
+        payload = {
+            'otp': request.POST.get('otp'),
+            'email': request.POST.get('email'),
+        }
+
+        return self.process_request(
+            request, target_view="create-new-password", target_function=auth_service.verify_otp, payload=payload
+        )
+
+class CreateNewPasswordView(View, CustomRequestUtil):
+    template_name = 'frontend/create-new-password.html'
+    extra_context_data = {
+        "title": "Create New Password",
+    }
+    template_on_error = "frontend/create-new-password.html"
+
+    def get(self, request, *args, **kwargs):
+        self.extra_context_data["email"] = request.session.get("email")
+        return self.process_request(request)
+
+    def post(self, request, *args, **kwargs):
+        auth_service = AuthService(self.request)
+        self.template_name = None
+        self.template_on_error = 'frontend/create-new-password.html'
+
+        payload = {
+            'new_password': request.POST.get('new_password'),
+            'confirm_password': request.POST.get('confirm_password'),
+            'email': request.POST.get('email'),
+        }
+        del request.session['email']
+        return self.process_request(
+            request, target_view="login", target_function=auth_service.create_new_password, payload=payload
         )
 
 
@@ -336,6 +394,33 @@ class UserLogoutView(View, CustomRequestUtil):
             request, target_function=auth_service.logout, target_view="home"
         )
 
+
+class ResendOTPView(APIView):
+
+    def post(self, request):
+        user_service = UserService(request)
+        auth_service = AuthService(request)
+
+        email = request.data.get("email")
+
+        user, error = user_service.find_user_by_email(email)
+        if not user:
+            return Response(
+                {"message": f"{error}"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if not email:
+            return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if auth_service.has_exceeded_otp_limit(user):
+            return Response(
+                {"message": "Too many OTP requests. Try again later."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+
+        auth_service.create_password_reset_request(user)
+
+        return Response({"message": "An OTP has been resent to your email address"}, status=status.HTTP_200_OK)
 
 
 
