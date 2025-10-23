@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 import cloudinary
 from cloudinary.models import CloudinaryField
@@ -112,6 +113,7 @@ class PasswordResetRequest(BaseModel):
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True)
 
+    @property
     def is_expired(self):
         """Check if the OTP has expired"""
         return timezone.now() > self.expires_at
@@ -135,6 +137,7 @@ class VendorProfile(BaseModel):
     rating = models.PositiveIntegerField(null=True, blank=True)
     id_card = CloudinaryField('id_card', blank=True, null=True)
     profile_photo = CloudinaryField('profile_photo', blank=True, null=True)
+    reason_for_rejection = models.TextField(null=True, blank=True)
     status = models.CharField(
         max_length=50, choices=VendorStatus.choices, default=VendorStatus.pending
     )

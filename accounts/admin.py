@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from accounts.models import User, VendorProfile
+from accounts.models import User, VendorProfile, PasswordResetRequest
 from crm.admin import BaseAdmin
 
 
@@ -88,8 +88,9 @@ class VendorProfileAdmin(admin.ModelAdmin):
                 "business_address",
                 "bank_name",
                 "account_number",
-                "status",
                 "rating"
+                "status",
+                "reason_for_rejection",
             ),
         }),
         ("Media Uploads", {
@@ -146,3 +147,10 @@ class VendorProfileAdmin(admin.ModelAdmin):
                 obj.profile_photo.url,
             )
         return "No profile photo uploaded"
+
+
+@admin.register(PasswordResetRequest)
+class PasswordResetRequestAdmin(admin.ModelAdmin):
+    list_display = ['user', 'is_used', 'created_at', 'expires_at']
+    list_filter = ['user', 'created_at']
+    search_fields = ['user__email']

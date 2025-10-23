@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from accounts.models import PasswordResetRequest
 from accounts.services.user_service import UserService
-from services.util import CustomRequestUtil, compare_password, check_otp_time_expired, generate_otp
+from services.util import CustomRequestUtil, compare_password, generate_otp
 
 
 class AuthService(CustomRequestUtil):
@@ -51,7 +51,7 @@ class AuthService(CustomRequestUtil):
 
         self.create_password_reset_request(user)
 
-        message = "If an account with that email exists, a password reset link has been sent."
+        message = "An OTP has been sent to your email."
 
         return message, None
 
@@ -63,15 +63,24 @@ class AuthService(CustomRequestUtil):
         if error:
             return None, error
 
-        password_reset_request = self.get_password_request(user)
+        password_reset_request = self.get_password_request(email)
 
-        if password_reset_request:
-            if not compare_password(otp, password_reset_request.otp):
-                return None, "OTP is not valid"
+        if not password_reset_request:
+            return None, "No OTP request found"
 
-            if password_reset_request.is_used or password_reset_request.is_expired:
-                return None, "OTP has expired"
+        if password_reset_request.is_used :
+            used = password_reset_request.is_used
+            return None, "OTP has already been used"
 
+        if password_reset_request.is_expired:
+            expired = password_reset_request.is_expired()
+            return None, "OTP has expired"
+
+        if not compare_password(otp, password_reset_request.otp):
+            return None, "OTP is not valid"
+
+        password_reset_request.is_used = True
+        password_reset_request.save(update_fields=["is_used"])
         return "Verification successful", None
 
 
@@ -92,11 +101,12 @@ class AuthService(CustomRequestUtil):
         user.save()
 
         message = "Your password has been reset successfully"
+        del self.request.session['email']
 
         return message, None
 
     def get_password_request(self, email):
-        return PasswordResetRequest.objects.filter(user__email=email).order_by("-created_at").first()
+        return PasswordResetRequest.objects.filter(user__email=email).last()
 
     def create_password_reset_request(self, user):
         otp, hashed_otp = generate_otp()

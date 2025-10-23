@@ -17,9 +17,9 @@ urlpatterns = [
 
 
     path('onboard-vendor/', OnboardVendorView.as_view(), name="onboard-vendor"),
-    path('vendor-dashboard-home/', VendorDashboardView.as_view(), name="vendor-dashboard-home"),
-    path('vendor-dashboard-products/', VendorProductListView.as_view(), name="vendor-dashboard-products"),
-    path('vendor-dashboard-orders/', VendorOrdersView.as_view(), name="vendor-dashboard-orders"),
-    path('vendor-dashboard-profile/', VendorProfileView.as_view(), name="vendor-dashboard-profile"),
+    path('vendor/home/', VendorDashboardView.as_view(), name="vendor-dashboard-home"),
+    path('vendor/products/', VendorProductListView.as_view(), name="vendor-dashboard-products"),
+    path('vendor/orders/', VendorOrdersView.as_view(), name="vendor-dashboard-orders"),
+    path('vendor/profile/', VendorProfileView.as_view(), name="vendor-dashboard-profile"),
 
 ]

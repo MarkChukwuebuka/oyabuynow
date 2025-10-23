@@ -70,7 +70,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="store_name" class="form-label">Store Name</label>
@@ -99,6 +99,26 @@
                             <input type="text" class="form-control" name="account_number" id="account_number" maxlength="10" value="{{vendor.account_number}}">
                             <small id="account_name" class="text-success mt-2 d-block"></small>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="business_logo" class="form-label">Business Logo</label>
+                            <input type="file" class="form-control" name="business_logo" id="business_logo">
+                        </div>
+
+                        {% if vendor.status == "Rejected" %}
+                        <div class="mb-3">
+                            <label for="profile_photo" class="form-label">Your Picture</label>
+                            <input type="file" class="form-control" name="profile_photo" id="profile_photo">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_card" class="form-label">Valid ID (National ID, Driver’s License, or Passport)</label>
+                            <input type="file" class="form-control" name="id_card" id="Id_card">
+                        </div>
+                        {% endif %}
+
+
+
 <!--                        <div class="mb-3">-->
 <!--                            <label for="city" class="form-label">City / State</label>-->
 <!--                            <input type="email" class="form-control" id="city" value="107 Veltri Drive">-->

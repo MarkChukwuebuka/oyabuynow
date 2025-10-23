@@ -1,14 +1,16 @@
+import json
+
 import requests
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.db.models import Sum, F
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.views import View
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.views.decorators.csrf import csrf_exempt
 
-from accounts.models import User
+from accounts.models import User, VendorStatus
 from accounts.services.auth_service import AuthService
 from accounts.services.user_service import UserService
 from accounts.services.vendor_service import VendorService
@@ -135,7 +137,7 @@ class CreateNewPasswordView(View, CustomRequestUtil):
     template_on_error = "frontend/create-new-password.html"
 
     def get(self, request, *args, **kwargs):
-        self.extra_context_data["email"] = request.session.get("email")
+
         return self.process_request(request)
 
     def post(self, request, *args, **kwargs):
@@ -146,9 +148,9 @@ class CreateNewPasswordView(View, CustomRequestUtil):
         payload = {
             'new_password': request.POST.get('new_password'),
             'confirm_password': request.POST.get('confirm_password'),
-            'email': request.POST.get('email'),
+            'email': request.session.get("email"),
         }
-        del request.session['email']
+
         return self.process_request(
             request, target_view="login", target_function=auth_service.create_new_password, payload=payload
         )
@@ -196,6 +198,17 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
         order_service = OrderItemService(request)
         product_service = ProductService(request)
 
+        if self.auth_vendor_profile.status == VendorStatus.pending:
+            messages.info(request, "Your Vendor application is being processed")
+            return redirect("home")
+
+        if self.auth_vendor_profile.status == VendorStatus.rejected:
+            messages.error(
+                request,
+                f"Your Vendor application was rejected. {self.auth_vendor_profile.reason_for_rejection}, please try applying again."
+            )
+            return redirect("onboard-vendor")
+
         total_orders = Order.objects.filter(items__product__created_by=self.auth_user).distinct().count()
         delivered_orders = OrderItem.objects.filter(
             product__created_by=self.auth_user, status=OrderStatusChoices.delivered, order__payment_status=PaymentStatus.paid
@@ -216,7 +229,7 @@ class VendorDashboardView(LoginRequiredMixin, View, CustomRequestUtil):
         )["total"] or 0
 
         latest_order_items = order_service.fetch_list()[:5]
-        trending_products = product_service.fetch_list(user=self.auth_user).order_by('-views')[:5]
+        trending_products = product_service.fetch_list(vendor=self.auth_vendor_profile).order_by('-views')[:5]
 
         self.extra_context_data["shipped_orders"] = shipped_orders
         self.extra_context_data["delivered_orders"] = delivered_orders
@@ -244,12 +257,22 @@ class VendorProductListView(LoginRequiredMixin, View, CustomRequestUtil):
 
     @vendor_required
     def get(self, request, *args, **kwargs):
+
+        if self.auth_vendor_profile.status == VendorStatus.pending:
+            messages.info(request, "Your Vendor application is being processed")
+            return redirect("home")
+
+        if self.auth_vendor_profile.status == VendorStatus.rejected:
+            messages.error(
+                request,
+                f"Your Vendor application was rejected. {self.auth_vendor_profile.reason_for_rejection}, please try applying again."
+            )
+            return redirect("onboard-vendor")
+
         vendor_service = VendorService(self.request)
         product_service = ProductService(request)
 
-
-
-        vendor_products = product_service.fetch_list(user=self.auth_user, paginate=True)
+        vendor_products = product_service.fetch_list(vendor=self.auth_vendor_profile, paginate=True)
 
         self.extra_context_data["vendor_products"] = vendor_products
 
@@ -268,6 +291,17 @@ class VendorOrdersView(LoginRequiredMixin, View, CustomRequestUtil):
 
     @vendor_required
     def get(self, request, *args, **kwargs):
+        if self.auth_vendor_profile.status == VendorStatus.pending:
+            messages.info(request, "Your Vendor application is being processed")
+            return redirect("home")
+
+        if self.auth_vendor_profile.status == VendorStatus.rejected:
+            messages.error(
+                request,
+                f"Your Vendor application was rejected. {self.auth_vendor_profile.reason_for_rejection}, please try applying again."
+            )
+            return redirect("onboard-vendor")
+
         vendor_service = VendorService(self.request)
         order_service = OrderItemService(request)
 
@@ -289,10 +323,18 @@ class VendorProfileView(LoginRequiredMixin, View, CustomRequestUtil):
 
     @vendor_required
     def get(self, request, *args, **kwargs):
+
         vendor_service = VendorService(self.request)
 
-        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
+        if self.auth_vendor_profile.status == VendorStatus.rejected:
+            messages.error(
+                request,
+                f"Your Vendor application was rejected. {self.auth_vendor_profile.reason_for_rejection}, please try applying again."
+            )
+            return redirect("onboard-vendor")
 
+
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
 
 
     def post(self, request, *args, **kwargs):
@@ -306,6 +348,7 @@ class VendorProfileView(LoginRequiredMixin, View, CustomRequestUtil):
             'business_phone': request.POST.get('business_phone'),
             'store_name': request.POST.get('store_name'),
             'business_email': request.POST.get('business_email'),
+            'business_logo': request.FILES.get('business_logo'),
         }
 
         return self.process_request(
@@ -395,32 +438,46 @@ class UserLogoutView(View, CustomRequestUtil):
         )
 
 
-class ResendOTPView(APIView):
 
-    def post(self, request):
+@csrf_exempt  # optional if you're not using CSRF tokens from JS
+def resend_otp(request):
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST method is allowed"}, status=405)
+
+    try:
         user_service = UserService(request)
         auth_service = AuthService(request)
 
-        email = request.data.get("email")
+        body = json.loads(request.body)
+        email = body.get("email")
+
+        if not email:
+            return JsonResponse({"error": "Email is required"}, status=400)
 
         user, error = user_service.find_user_by_email(email)
         if not user:
-            return Response(
-                {"message": f"{error}"}, status=status.HTTP_404_NOT_FOUND
+            return JsonResponse(
+                {"error": f"{error}"}, status=404
             )
 
-        if not email:
-            return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-
         if auth_service.has_exceeded_otp_limit(user):
-            return Response(
-                {"message": "Too many OTP requests. Try again later."},
-                status=status.HTTP_429_TOO_MANY_REQUESTS
+            return JsonResponse(
+                {"error": "Too many OTP requests. Try again later."},
+                status=429
             )
 
         auth_service.create_password_reset_request(user)
 
-        return Response({"message": "An OTP has been resent to your email address"}, status=status.HTTP_200_OK)
+        return JsonResponse({
+            "success": True,
+            "message": f"OTP has been resent to your email"
+        }, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 

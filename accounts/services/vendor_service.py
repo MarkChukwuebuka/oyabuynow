@@ -108,6 +108,8 @@ class VendorService(CustomRequestUtil):
 
         return vendor, None
 
+
+
     def get_base_query(self):
         return VendorProfile.available_objects.select_related("user").all()
 

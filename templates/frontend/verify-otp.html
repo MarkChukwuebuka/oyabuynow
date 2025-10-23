@@ -75,14 +75,19 @@
 </section>
 <!-- OTP Verification section end -->
 
-<!-- OTP Input + Resend Timer Script -->
+
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const otpFields = document.querySelectorAll(".otp-field");
     const otpInput = document.getElementById("otpInput");
     const resendLink = document.getElementById("resendLink");
     const countdown = document.getElementById("countdown");
-    let timer;
+
+    // Get CSRF token from the form
+    const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const userEmail = "{{ email|default:'' }}";  // Pass from Django context
 
     // 🔹 Automatically focus next/previous field when typing or deleting
     otpFields.forEach((field, index) => {
@@ -118,35 +123,41 @@ document.addEventListener("DOMContentLoaded", function () {
         otpInput.value = Array.from(otpFields).map(f => f.value).join("");
     }
 
-    // 🔹 Resend OTP cooldown (60s)
+    // 🔹 Handle "Resend OTP" click
     resendLink.addEventListener("click", async function (e) {
         e.preventDefault();
 
         if (resendLink.classList.contains("disabled")) return;
 
+        if (!userEmail) {
+            showToast("Email not found. Please refresh the page.", "error");
+            return;
+        }
+
         try {
-            const response = await fetch("{% url 'resend-otp' %}", {
+            const response = await fetch("/api/resend-otp/", {
                 method: "POST",
                 headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
                     "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
                 },
-                body: JSON.stringify({ email: "{{ user_email }}" }),
+                body: JSON.stringify({ email: userEmail }),
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                showToast(data.detail || "A new OTP has been sent to your email.", "success");
+            if (response.ok && data.success) {
+                showToast(data.message || "A new OTP has been sent to your email.", "success");
                 startCountdown(60);
             } else {
-                showToast(data.detail || "An error occurred, please try again.", "error");
+                showToast(data.error || "An error occurred, please try again.", "error");
             }
         } catch (error) {
             showToast("Something went wrong. Please try again.", "error");
         }
     });
 
+    // 🔹 Countdown (Resend cooldown)
     function startCountdown(seconds) {
         resendLink.classList.add("disabled");
         resendLink.style.pointerEvents = "none";
@@ -154,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         countdown.textContent = `(Wait ${seconds}s)`;
 
-        timer = setInterval(() => {
+        const timer = setInterval(() => {
             seconds--;
             countdown.textContent = seconds > 0 ? `(Wait ${seconds}s)` : "";
             if (seconds <= 0) {
@@ -167,12 +178,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
     }
 
-    // optional: a simple toast for feedback
-    function showToast(message, type = "info") {
-        alert(message); // replace with SweetAlert/Toastify if desired
-    }
+
 });
 </script>
+
+
+
 
 <style>
 .otp-field {
