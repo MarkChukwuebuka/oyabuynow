@@ -88,7 +88,7 @@ class VendorProfileAdmin(admin.ModelAdmin):
                 "business_address",
                 "bank_name",
                 "account_number",
-                "rating"
+                "rating",
                 "status",
                 "reason_for_rejection",
             ),

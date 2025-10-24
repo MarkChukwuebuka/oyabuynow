@@ -254,19 +254,30 @@
                                             <ul class="user-box-name">
                                                 {% if user.is_authenticated %}
 
+                                                    {% if user.user_type == "Vendor" %}
                                                     <li class="product-box-contain">
                                                         <i></i>
-                                                        {% if user.user_type == "Vendor" %}
                                                         <a href="{% url 'vendor-dashboard-home' %}">Dashboard</a>
-                                                        {% else %}
-                                                        <a href="{% url 'dashboard' %}">Dashboard</a>
-                                                        {% endif %}
-                                                    </li>
 
+                                                    </li>
                                                     <li class="product-box-contain">
                                                         <i></i>
-                                                        <a href="{% url 'orders' %}">Orders</a>
+                                                        <a href="{% url 'vendor-dashboard-orders' %}">Orders</a>
                                                     </li>
+                                                    {% else %}
+
+                                                        <li class="product-box-contain">
+                                                            <i></i>
+                                                            <a href="{% url 'dashboard' %}">Dashboard</a>
+                                                        </li>
+
+                                                        <li class="product-box-contain">
+                                                            <i></i>
+                                                            <a href="{% url 'orders' %}">Orders</a>
+                                                        </li>
+                                                    {% endif %}
+
+
 
                                                     <li class="product-box-contain">
                                                         <i></i>

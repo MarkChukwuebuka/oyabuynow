@@ -54,6 +54,17 @@ class Order(BaseModel):
     def amount_in_kobo(self):
         return self.total_cost * 100
 
+    def update_overall_status(self):
+        """Auto-update overall status based on items."""
+        item_statuses = self.items.values_list("status", flat=True)
+        if all(s == OrderStatusChoices.shipped for s in item_statuses):
+            self.overall_status = OrderStatusChoices.shipped
+        elif all(s == OrderStatusChoices.delivered for s in item_statuses):
+            self.overall_status = OrderStatusChoices.delivered
+        else:
+            self.overall_status = OrderStatusChoices.ordered
+        self.save()
+
 
 
 

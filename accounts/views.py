@@ -395,6 +395,7 @@ class OnboardVendorView(View, CustomRequestUtil):
     }
 
     def get(self, request, *args, **kwargs):
+
         return self.process_request(request)
 
     def post(self, request, *args, **kwargs):

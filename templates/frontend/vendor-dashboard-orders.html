@@ -15,91 +15,192 @@
   </div>
 
   {% if order_items %}
-    <div class="order-tab dashboard-bg-box">
-                                        <div class="table-responsive">
+  <div class="order-tab dashboard-bg-box">
+    <div class="table-responsive">
+      <table class="table order-table">
+        <thead>
+          <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Order ID</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Status</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order_item in order_items %}
+          <tr>
+            <td>{{ order_item.order.created_at }}</td>
+            <td>{{ order_item.order.ref }}</td>
+            <td><h6>{{ order_item.product.name }}</h6></td>
+            <td>
+              <span class="badge
+                {% if order_item.status == 'Shipped' %} bg-info
+                {% elif order_item.status == 'Delivered' %} bg-success
+                {% else %} bg-secondary{% endif %}">
+                {{ order_item.status }}
+              </span>
+            </td>
+            <td><h6>{{ order_item.price|naira }}</h6></td>
+            <td><h6>{{ order_item.quantity }}</h6></td>
+            <td>
+              {% if order_item.status == "Ordered" %}
+                <button data-bs-toggle="modal" data-bs-target="#update-status"
+                        class="btn btn-success btn-2-animation"
+                        data-id="{{order_item.id}}" data-action="shipped"
+                >Mark As Shipped
+                </button>
+                {% elif order_item.status == "Shipped" %}
+                <button data-bs-toggle="modal" data-bs-target="#update-status"
+                        class="btn btn-success btn-animation"
+                        data-id="{{order_item.id}}" data-action="shipped"
+                >
+                    Mark As Delivered
+                </button>
+                {% else %}
+                <span class="text-success">Delivered</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-                                            <table class="table order-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th scope="col">Date</th>
-                                                        <th scope="col">Order ID</th>
-                                                        <th scope="col">Product Name</th>
-                                                        <th scope="col">Status</th>
-                                                        <th scope="col">Price</th>
-                                                        <th scope="col">Quantity</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for order_item in order_items %}
-                                                    <tr>
-                                                        <td class="product-image">{{order_item.order.created_at}}</td>
-                                                        <td class="product-image">{{order_item.order.ref}}</td>
-                                                        <td>
-                                                            <h6>{{ order_item.product.name }}</h6>
-                                                        </td>
-                                                        <td>
-                                                            <label class="{% if order.status == 'Pending' %}
-                                                                            danger{% elif order.status == 'Shipped' %}
-                                                                            info{% else %}success{% endif %}"
-                                                            >{{order_item.status}}</label>
-                                                        </td>
-                                                        <td>
-                                                            <h6>{{order_item.price | naira}}</h6>
-                                                        </td>
-                                                        <td>
-                                                            <h6>{{ order_item.quantity }}</h6>
-                                                        </td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
+    <nav class="custom-pagination">
+      <ul class="pagination justify-content-center">
+        <!-- Previous -->
+        {% if order_items.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ order_items.previous_page_number }}">
+            <i class="fa-solid fa-angles-left"></i>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
+        </li>
+        {% endif %}
 
-                                        </div>
-                                        <nav class="custom-pagination">
-                                            <ul class="pagination justify-content-center">
-                                                <!-- Previous -->
-                                                {% if order_items.has_previous %}
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page={{ order_items.previous_page_number }}">
-                                                            <i class="fa-solid fa-angles-left"></i>
-                                                        </a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class="page-item disabled">
-                                                        <span class="page-link"><i class="fa-solid fa-angles-left"></i></span>
-                                                    </li>
-                                                {% endif %}
+        <!-- Page Numbers -->
+        {% for num in order_items.paginator.page_range %}
+        {% if order_items.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
 
-                                                <!-- Page Numbers -->
-                                                {% for num in order_items.paginator.page_range %}
-                                                    {% if order_items.number == num %}
-                                                        <li class="page-item active">
-                                                            <span class="page-link">{{ num }}</span>
-                                                        </li>
-                                                    {% else %}
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                                        </li>
-                                                    {% endif %}
-                                                {% endfor %}
-
-                                                <!-- Next -->
-                                                {% if order_items.has_next %}
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="?page={{ order_items.next_page_number }}">
-                                                            <i class="fa-solid fa-angles-right"></i>
-                                                        </a>
-                                                    </li>
-                                                {% else %}
-                                                    <li class="page-item disabled">
-                                                        <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
-                                                    </li>
-                                                {% endif %}
-                                            </ul>
-                                        </nav>
-                                    </div>
+        <!-- Next -->
+        {% if order_items.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ order_items.next_page_number }}">
+            <i class="fa-solid fa-angles-right"></i>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link"><i class="fa-solid fa-angles-right"></i></span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
   {% else %}
-    <p>No orders yet.</p>
+  <p>No orders yet.</p>
   {% endif %}
 </div>
+
+
+<div class="modal fade theme-modal" id="update-status" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change order item status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h3 id="update-message">Are you sure you want to mark this order as shipped?</h3>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn theme-bg-color btn-md fw-bold text-light update-btn">
+          Proceed
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+  const csrfToken = "{{ csrf_token }}";
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    let currentProductId = null;
+    const updateModal = document.getElementById("update-status");
+    const updateMessage = document.getElementById("update-message");
+    const updateBtn = updateModal.querySelector(".update-btn");
+
+    // Open modal
+    document.querySelectorAll("[data-bs-target='#update-status']").forEach(link => {
+      link.addEventListener("click", function () {
+        orderItemId = this.dataset.id;
+        action = this.dataset.action;
+        updateMessage.textContent = `Are you sure you want to mark this order item as "${action}"?`;
+      });
+    });
+
+    // Handle delete confirmation
+    updateBtn.addEventListener("click", async function () {
+      if (!orderItemId) return;
+
+      try {
+        const response = await fetch(`/update-order-item-status/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            order_item_id: orderItemId,
+            action: action
+          })
+        });
+        const data = await response.json();
+         if (response.ok && data.success) {
+            showToast(data.message, "success");
+
+            location.reload()
+
+         } else {
+            showToast(data.error || "An error occurred, please try again.", "error");
+         }
+
+          const modal = bootstrap.Modal.getInstance(updateModal);
+          modal.hide();
+
+      } catch (error) {
+        showToast("Network error. Please try again.", "error");
+        console.error("Network error:", error);
+      }
+    });
+  });
+</script>
+
 {% endblock %}

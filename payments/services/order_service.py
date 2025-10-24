@@ -114,9 +114,10 @@ class OrderItemService(CustomRequestUtil):
         qs = OrderItem.objects.select_related("product", "order")
         return qs
 
-    def fetch_single(self, ref):
-        order = self.get_base_query().filter(ref=ref).first()
-        if not order:
-            return None, self.make_error("Order does not exist")
 
-        return order, None
+    def fetch_single(self, order_item_id):
+        order_item = self.get_base_query().filter(id=order_item_id).first()
+        if not order_item:
+            return None, self.make_error("Order item does not exist")
+
+        return order_item, None

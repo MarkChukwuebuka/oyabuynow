@@ -1,18 +1,22 @@
+import json
+
 import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 from cart.services.cart_service import CartService
 from products.services.product_service import ProductService
-from services.util import CustomRequestUtil, send_email
-from .models import OrderItem, Order, PaymentStatus, Transaction
+from services.util import CustomRequestUtil, send_email, customer_required
+from .models import OrderItem, Order, PaymentStatus, Transaction, OrderStatusChoices
 
-from .services.order_service import OrderService
+from .services.order_service import OrderService, OrderItemService
 
 
 @login_required
@@ -191,7 +195,7 @@ class CreateListOrderView(View, CustomRequestUtil):
     extra_context_data = {
         "title": "Orders"
     }
-
+    @customer_required
     def get(self, request, *args, **kwargs):
         self.template_name = "backend/order-list.html"
         self.context_object_name = 'orders'
@@ -218,3 +222,51 @@ class RetrieveUpdateDeleteOrderView(View, CustomRequestUtil):
         return self.process_request(
             request, target_function=order_service.fetch_single_by_ref, ref=kwargs.get("ref")
         )
+
+
+@csrf_exempt
+def update_order_item_status(request):
+    order_item_service = OrderItemService(request)
+
+    if request.method == "POST":
+        data = json.loads(request.body)
+        order_item_id = data.get("order_item_id")
+        action = data.get("action")
+
+        order_item, _ = order_item_service.fetch_single(order_item_id)
+        if not order_item:
+            return JsonResponse({
+                "success": False,
+                "message": _
+            })
+
+
+        if action == "shipped":
+            order_item.status = OrderStatusChoices.shipped
+            order_item.save()
+
+            message = "This item has been marked as 'Shipped'."
+
+            return JsonResponse({
+                "success": True,
+                "message": message,
+            })
+
+        elif action == "delivered":
+            order_item.status = OrderStatusChoices.delivered
+            order_item.save()
+
+            message = "This item has been marked as 'Delivered'."
+
+            return JsonResponse({
+                "success": True,
+                "message": message,
+            })
+        else:
+            message = "An error occurred while trying to process this request."
+
+        return JsonResponse({
+            "success": False,
+            "message": message,
+        })
+    return None
