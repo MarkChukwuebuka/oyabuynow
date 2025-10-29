@@ -332,7 +332,7 @@ var options = {
             format: 'dd MMM yyyy'
         }
     },
-    colors: ['#0DA487'],
+    colors: ['#EE6A3E'],
     fill: {
         type: 'gradient',
         gradient: {
@@ -368,7 +368,7 @@ var options = {
         align: 'left'
     },
     labels: ['Recent Order', 'Panding Payments', 'Recived Payments', 'Complete Order'],
-    colors: ['#e2f0ed', '#c8c8c8', '#0DA487', '#e7e7e7'],
+    colors: ['#e2f0ed', '#c8c8c8', '#EE6A3E', '#e7e7e7'],
     responsive: [{
         breakpoint: 1430,
         options: {

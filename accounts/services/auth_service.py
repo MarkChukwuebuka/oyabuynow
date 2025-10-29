@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from accounts.models import PasswordResetRequest
 from accounts.services.user_service import UserService
-from services.util import CustomRequestUtil, compare_password, generate_otp
+from services.util import CustomRequestUtil, compare_password, generate_otp, send_email
 
 
 class AuthService(CustomRequestUtil):
@@ -119,7 +119,7 @@ class AuthService(CustomRequestUtil):
             expires_at=timezone.now()
         )
 
-        # TODO: Implement email sending logic here.
+        #send_email()
 
         return otp
 

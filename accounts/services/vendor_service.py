@@ -6,7 +6,7 @@ from email_validator import validate_email
 
 from accounts.models import User, VendorProfile, VendorStatus, UserTypes
 from accounts.services.user_service import UserService
-from services.util import CustomRequestUtil, compare_password
+from services.util import CustomRequestUtil, compare_password, send_email
 
 
 class VendorService(CustomRequestUtil):
@@ -95,8 +95,7 @@ class VendorService(CustomRequestUtil):
 
         message = "Vendor application request has been submitted successfully. An email will be sent to you with an update"
 
-        # TODO: send email
-
+        #send_email()
         return message, None
 
 

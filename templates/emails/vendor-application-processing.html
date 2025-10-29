@@ -1,0 +1,84 @@
+{% extends './partials/base.html' %}
+{% load static %}
+{% block content %}
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <td align="center">
+                <img src="{% static 'frontend/assets/images/welcome-poster.jpg' %}" alt="Vendor Application"
+                    style="width: 100px; height: auto;">
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 22px; margin: 0;">Vendor Application Received</h3>
+            </td>
+
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 20px; margin: 0; color: #939393; margin-top: 15px;">
+                    Hi {{ vendor_name|default:"Vendor" }},
+                </h3>
+            </td>
+
+            <td>
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    We’ve received your application to become a vendor on our platform. Our team is currently
+                    reviewing your submission to ensure it meets our quality and compliance standards.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="button-table" style="margin-top: 27px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block; text-align: center;">
+                <div style="background-color: #f5f5f5; display: inline-block; padding: 15px 25px; border-radius: 10px;">
+                    <h2 style="font-size: 22px; font-weight: 700; margin: 0; color: #333;">
+                        Application Under Review
+                    </h2>
+                </div>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 27px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    You will receive another email once your application has been reviewed and approved. This
+                    typically takes between <strong>24 to 48 hours</strong>.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 20px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    Thank you for your interest in partnering with us! We look forward to having you on board.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+{% endblock content %}

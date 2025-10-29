@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
+    'django_elasticsearch_dsl',
+
     # local
     'accounts',
     'products',
@@ -59,6 +61,7 @@ INSTALLED_APPS = [
     'cart',
     'payments',
     'media',
+    'search',
 ]
 
 MIDDLEWARE = [
@@ -112,6 +115,13 @@ else:
 
         )
     }
+
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': ['http://localhost:9200']
+    }
+}
 
 
 # Password validation

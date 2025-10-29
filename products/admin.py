@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from crm.admin import BaseAdmin
 from media.admin import UploadInline
+from products.admin_actions import reindex_products, remove_from_index, reindex_categories
 from products.models import Tag, Category, Product, ProductReview, Subcategory, Wishlist
 
 
@@ -14,8 +15,9 @@ class TagAdmin(BaseAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(BaseAdmin):
-    list_display = ["id", "name"] + BaseAdmin.list_display
+    list_display = ["id", "name", "cover_image"] + BaseAdmin.list_display
     search_fields = ["name"]
+    actions = [reindex_categories]
 
 @admin.register(Subcategory)
 class SubcategoryAdmin(BaseAdmin):
@@ -28,9 +30,11 @@ class ProductAdmin(BaseAdmin):
     list_display = ["id", "name", "price", "availability"
                     ] + BaseAdmin.list_display
     search_fields = ["name", "description", "price", "sku"]
+    actions = [reindex_products, remove_from_index]
     list_filter = ["rating", "price"]
 
     inlines = [UploadInline]
+
 
 
 @admin.register(ProductReview)

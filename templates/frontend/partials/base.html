@@ -25,6 +25,8 @@
     <!-- Template css -->
     <link id="color-link" rel="stylesheet" type="text/css" href="{% static 'frontend/assets/css/style.css' %}">
 
+    <link rel="stylesheet" type="text/css" href="{% static 'frontend/assets/css/search-autocomplete.css' %}">
+
       <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
       <script src="https://unpkg.com/alpinejs" defer></script>
     <!-- In your <head> tag -->
@@ -169,24 +171,13 @@
                             </a>
 
                             <div class="middle-box">
-<!--                                <div class="location-box">-->
-<!--                                    <button class="btn location-button" data-bs-toggle="modal"-->
-<!--                                        data-bs-target="#locationModal">-->
-<!--                                        <span class="location-arrow">-->
-<!--                                            <i data-feather="map-pin"></i>-->
-<!--                                        </span>-->
-<!--                                        <span class="locat-name">Your Location</span>-->
-<!--                                        <i class="fa-solid fa-angle-down"></i>-->
-<!--                                    </button>-->
-<!--                                </div>-->
 
-                                <div class="search-box">
-                                    <div class="input-group">
-                                        <input type="search" class="form-control" placeholder="I'm searching for...">
-                                        <button class="btn" type="button" id="button-addon2">
-                                            <i data-feather="search"></i>
-                                        </button>
-                                    </div>
+                                <div class="search-box position-relative">
+                                  <div class="input-group">
+                                    <input type="search" id="search-input" class="form-control" placeholder="I'm searching for...">
+                                    <button class="btn" type="button"><i data-feather="search"></i></button>
+                                  </div>
+                                  <div id="suggestions" class="position-absolute w-100 bg-white border rounded shadow mt-1"></div>
                                 </div>
                             </div>
 
@@ -542,6 +533,42 @@
     }
 
     </script>
+
+    <script src="{% static 'frontend/assets/js/search-autocomplete.js' %}"></script>
+
+<!--    <script>-->
+<!--const input = document.getElementById("search-input");-->
+<!--const suggestionsBox = document.getElementById("suggestions");-->
+<!--let debounceTimeout = null;-->
+
+<!--input.addEventListener("input", () => {-->
+<!--  clearTimeout(debounceTimeout);-->
+<!--  const query = input.value.trim();-->
+<!--  if (!query) {-->
+<!--    suggestionsBox.innerHTML = "";-->
+<!--    return;-->
+<!--  }-->
+
+<!--  debounceTimeout = setTimeout(() => {-->
+<!--    fetch(`/api/search-suggestions/?q=${encodeURIComponent(query)}`)-->
+<!--      .then(res => res.json())-->
+<!--      .then(data => {-->
+<!--        const results = data.results;-->
+<!--        let html = "";-->
+
+<!--        for (const [group, items] of Object.entries(results)) {-->
+<!--          if (items.length === 0) continue;-->
+<!--          html += `<div class="p-2 border-bottom"><strong>${group.toUpperCase()}</strong></div>`;-->
+<!--          items.forEach(item => {-->
+<!--            html += `<div class="p-2 suggestion-item" style="cursor:pointer">${item.name}</div>`;-->
+<!--          });-->
+<!--        }-->
+
+<!--        suggestionsBox.innerHTML = html || "<div class='p-2'>No results found</div>";-->
+<!--      });-->
+<!--  }, 300);-->
+<!--});-->
+<!--</script>-->
 
 
     {% include '../partials/messages.html' %}

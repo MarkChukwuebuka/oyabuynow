@@ -12,6 +12,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 from crm.models import BaseModel
+from services.util import send_email
+
 
 class VendorStatus(models.TextChoices):
     pending = "Pending"
@@ -171,17 +173,24 @@ class VendorProfile(BaseModel):
                     setattr(self, field, upload["public_id"])
 
         if self.pk:
+            template_dict = {
+                'vendor' : self.business_name
+            }
             old_vendor = VendorProfile.objects.get(pk=self.pk)
             if old_vendor.status != self.status and self.status == VendorStatus.approved:
                 self.user.user_type = UserTypes.vendor
                 self.user.save()
-        #         TODO: send email notification for approval
+                # send_email()
                 pass
 
             if old_vendor.status != self.status and self.status == VendorStatus.rejected:
                 self.user.user_type = UserTypes.customer
                 self.user.save()
-        #         TODO: send email notification for rejection
+
+                template_dict['decline_reason'] = self.reason_for_rejection
+
+                #send_email()
+
                 pass
 
 

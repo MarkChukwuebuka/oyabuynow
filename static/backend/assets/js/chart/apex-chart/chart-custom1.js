@@ -25,7 +25,7 @@ var options = {
         show: false,
     },
 
-    colors: ['#0da487', '#2483e2'],
+    colors: ['#EE6A3E', '#2483e2'],
 
     markers: {
         size: 1,
@@ -208,7 +208,7 @@ var options = {
         }
     },
 
-    colors: ['#0da487'],
+    colors: ['#EE6A3E'],
     dataLabels: {
         enabled: false
     },
@@ -259,7 +259,7 @@ var options = {
     legend: {
         show: false
     },
-    colors: ["#0da487"],
+    colors: ["#EE6A3E"],
     fill: {
         type: 'gradient',
         gradient: {

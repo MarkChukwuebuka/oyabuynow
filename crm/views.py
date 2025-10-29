@@ -1,4 +1,6 @@
+from django.http import JsonResponse
 from django.views import View
+from elasticsearch_dsl import MultiSearch, Search
 
 from products.services.product_service import ProductService
 from services.util import CustomRequestUtil
@@ -57,3 +59,57 @@ class AboutView(View, CustomRequestUtil):
 
     def get(self, request, *args, **kwargs):
         return self.process_request(request)
+
+
+
+
+def search_suggestions(request):
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse({"results": {}})
+
+    msearch = MultiSearch()
+    msearch = (
+        msearch.add(
+            Search(index='products').query(
+                'multi_match', query=query,
+                fields=['name', 'short_description', 'description', 'tags', 'brand', 'category', 'subcategory']
+            )[0:5]
+        )
+        .add(Search(index='categories').query('match', name=query)[0:5])
+        .add(Search(index='subcategories').query('match', name=query)[0:5])
+        .add(Search(index='brands').query('match', name=query)[0:5])
+        .add(Search(index='tags').query('match', name=query)[0:5])
+    )
+
+    responses = msearch.execute()
+
+    grouped_results = {
+        "products": [],
+        "categories": [],
+        "subcategories": [],
+        "brands": [],
+        "tags": [],
+    }
+
+    # Map results
+    for idx, resp in enumerate(responses):
+        index_name = resp.hits.hits[0]['_index'] if resp.hits.hits else None
+        if not index_name:
+            continue
+
+        if index_name == 'products':
+            grouped_results["products"] = [
+                {"name": hit.name, "category": hit.category, "brand": hit.brand}
+                for hit in resp
+            ]
+        elif index_name == 'categories':
+            grouped_results["categories"] = [{"name": hit.name} for hit in resp]
+        elif index_name == 'subcategories':
+            grouped_results["subcategories"] = [{"name": hit.name, "category": hit.category} for hit in resp]
+        elif index_name == 'brands':
+            grouped_results["brands"] = [{"name": hit.name} for hit in resp]
+        elif index_name == 'tags':
+            grouped_results["tags"] = [{"name": hit.name} for hit in resp]
+
+    return JsonResponse({"results": grouped_results})
