@@ -2,13 +2,10 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
-from django.template.defaultfilters import title
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from accounts.services.vendor_service import VendorService
-from crm.search import ProductSearch
 from products.models import Wishlist, Subcategory
 from products.services.category_brand_service import CategoryService, ColorService, BrandService, TagService, \
     SubcategoryService
@@ -386,78 +383,3 @@ def get_subcategories(request, category_id):
     subcategories = Subcategory.available_objects.filter(category_id=category_id).values('id', 'name')
     return JsonResponse(list(subcategories), safe=False)
 
-
-class SearchResultsView(View):
-    """
-    View for displaying search results page
-    """
-    template_name = 'frontend/search-results.html'
-
-    def get(self, request):
-        query = request.GET.get('q', '').strip()
-        category = request.GET.get('category', None)
-        brand = request.GET.get('brand', None)
-        min_price = request.GET.get('min_price', None)
-        max_price = request.GET.get('max_price', None)
-        tags = request.GET.get('tags', None)
-        in_stock = request.GET.get('in_stock', None)
-        sort_by = request.GET.get('sort', 'relevance')
-        page = request.GET.get('page', 1)
-
-        # Convert parameters
-        try:
-            page = int(page)
-        except (ValueError, TypeError):
-            page = 1
-
-        if min_price:
-            try:
-                min_price = float(min_price)
-            except (ValueError, TypeError):
-                min_price = None
-
-        if max_price:
-            try:
-                max_price = float(max_price)
-            except (ValueError, TypeError):
-                max_price = None
-
-        if tags:
-            tags = [tag.strip() for tag in tags.split(',')]
-
-        if in_stock:
-            in_stock = in_stock.lower() == 'true'
-
-        # Perform search
-        results = ProductSearch.search_products(
-            query=query,
-            category=category,
-            brand=brand,
-            min_price=min_price,
-            max_price=max_price,
-            tags=tags,
-            in_stock=in_stock,
-            sort_by=sort_by,
-            page=page,
-            page_size=20
-        )
-
-        # Get facets for filters
-        facets = ProductSearch.get_facets(query=query)
-
-        context = {
-            'query': query,
-            'results': results,
-            'facets': facets,
-            'sort_by': sort_by,
-            'current_filters': {
-                'category': category,
-                'brand': brand,
-                'min_price': min_price,
-                'max_price': max_price,
-                'tags': tags,
-                'in_stock': in_stock,
-            }
-        }
-
-        return render(request, self.template_name, context)

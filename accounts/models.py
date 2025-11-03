@@ -1,18 +1,15 @@
-import re
 from datetime import timedelta
 
 import cloudinary
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django.db.models import TextChoices, Q
+from django.db.models import TextChoices
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 
 
 from crm.models import BaseModel
-from services.util import send_email
 
 
 class VendorStatus(models.TextChoices):
@@ -24,6 +21,11 @@ class UserTypes(TextChoices):
     admin = "Admin"
     vendor = "Vendor"
     customer = "Customer"
+
+class OTPTypes(TextChoices):
+    login = "Login"
+    signup = "Signup"
+    password_reset = "Password Reset"
 
 
 class UserManager(BaseUserManager):
@@ -45,6 +47,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_verified', True)
         extra_fields.setdefault('user_type', UserTypes.admin)
 
         if not extra_fields.get('is_staff'):
@@ -75,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     )
 
     is_verified = models.BooleanField(
-        default=True,
+        default=False,
         help_text='Designates whether this user has confirmed his/her email.'
     )
     is_staff = models.BooleanField(
@@ -106,12 +109,13 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return self.first_name or self.email
 
 
-class PasswordResetRequest(BaseModel):
+class OTPRequest(BaseModel):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=False,
-        related_name="password_reset_requests"
+        related_name="otp_requests"
     )
     otp = models.CharField(max_length=255, default="123456")
+    otp_type = models.CharField(max_length=25, choices=OTPTypes.choices, default=OTPTypes.signup)
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True)
 
@@ -173,25 +177,33 @@ class VendorProfile(BaseModel):
                     setattr(self, field, upload["public_id"])
 
         if self.pk:
-            template_dict = {
-                'vendor' : self.business_name
+            from services.util import send_email
+
+            email = self.business_email if self.business_email else self.user.email
+            email_context = {
+                'vendor_name' : self.business_name
             }
             old_vendor = VendorProfile.objects.get(pk=self.pk)
             if old_vendor.status != self.status and self.status == VendorStatus.approved:
                 self.user.user_type = UserTypes.vendor
                 self.user.save()
-                # send_email()
-                pass
+
+                send_email(
+                    'emails/vendor-application-approved.html', 'Vendor Application was Approved',
+                    email, email_context
+                )
+
 
             if old_vendor.status != self.status and self.status == VendorStatus.rejected:
-                self.user.user_type = UserTypes.customer
+
                 self.user.save()
 
-                template_dict['decline_reason'] = self.reason_for_rejection
+                email_context['decline_reason'] = self.reason_for_rejection
 
-                #send_email()
-
-                pass
+                send_email(
+                    'emails/vendor-application-rejected.html', 'Vendor Application was Declined',
+                    email, email_context
+                )
 
 
         super().save(*args, **kwargs)

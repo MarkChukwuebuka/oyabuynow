@@ -2,7 +2,7 @@ from django.urls import path
 
 from accounts.views import UserLoginView, UserSignupView, UserDashboardView, UserLogoutView, UpdateUserView, \
     UserForgotPasswordView, VendorDashboardView, OnboardVendorView, VendorProductListView, VendorOrdersView, \
-    VendorProfileView, VerifyOtpView, CreateNewPasswordView
+    VendorProfileView, VerifyOtpView, CreateNewPasswordView, VendorOrderDetailsView
 
 urlpatterns = [
     path('login/', UserLoginView.as_view(), name="login"),
@@ -20,6 +20,7 @@ urlpatterns = [
     path('vendor/home/', VendorDashboardView.as_view(), name="vendor-dashboard-home"),
     path('vendor/products/', VendorProductListView.as_view(), name="vendor-dashboard-products"),
     path('vendor/orders/', VendorOrdersView.as_view(), name="vendor-dashboard-orders"),
+    path('vendor/order/<str:ref>/', VendorOrderDetailsView.as_view(), name='vendor-order-items'),
     path('vendor/profile/', VendorProfileView.as_view(), name="vendor-dashboard-profile"),
 
 ]

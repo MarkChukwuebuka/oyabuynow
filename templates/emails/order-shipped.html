@@ -1,0 +1,138 @@
+{% extends './partials/base.html' %}
+
+{% load currency_filters %}
+{% load static %}
+
+{% block content %}
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <td align="center">
+                <img src="{% static 'frontend/assets/images/order-shipped.png' %}" alt="Order Shipped" style="width: 120px; height: auto;">
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 22px; margin: 0;">Your Order Has Been Shipped 🚚</h3>
+            </td>
+
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 18px; margin: 15px 0 5px; color: #666;">
+                    Hi {{ customer_name|default:"Customer" }},
+                </h3>
+            </td>
+
+            <td>
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    Great news! Your order <strong>#{{ order_item.ref }}</strong> has been shipped and is on its way to you.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Order Summary Table -->
+<table style="margin: 25px auto; border-collapse: collapse; width: 80%; border: 1px solid #eee;" cellpadding="10">
+    <thead>
+        <tr style="background-color: #f5f5f5; text-align: left;">
+            <th style="font-size: 16px;">Image</th>
+            <th style="font-size: 16px;">Item</th>
+            <th style="font-size: 16px;">Quantity</th>
+            <th style="font-size: 16px;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="font-size: 15px; color: #333;">
+                {% with order_item.product.product_media.first as first_image %}
+                    {% if first_image %}
+                        <img src="{{first_image.image.url}}" class="img-fluid blur-up lazyload" alt="{{ order_item.product.name }}">
+                    {% endif %}
+                {% endwith %}
+            </td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.product.name }}</td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.quantity }}</td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.price|naira }}</td>
+        </tr>
+
+    </tbody>
+
+</table>
+
+<!-- Tracking Info -->
+{% if tracking_number %}
+<!--<table class="content-table" style="margin-top: 25px;" align="center" border="0" cellpadding="0"-->
+<!--    cellspacing="0" width="100%">-->
+<!--    <thead>-->
+<!--        <tr style="display: block;">-->
+<!--            <td style="display: block;">-->
+<!--                <h4 style="font-size: 18px; font-weight: 700; margin: 10px 0;">Tracking Information</h4>-->
+<!--                <p style="font-size: 16px; color: #333; margin: 5px 0;">-->
+<!--                    <strong>Courier:</strong> {{ courier_name|default:"Your selected shipping provider" }}-->
+<!--                </p>-->
+<!--                <p style="font-size: 16px; color: #333; margin: 5px 0;">-->
+<!--                    <strong>Tracking Number:</strong> {{ tracking_number }}-->
+<!--                </p>-->
+<!--                {% if tracking_url %}-->
+<!--                <p style="margin-top: 15px;">-->
+<!--                    <a href="{{ tracking_url }}"-->
+<!--                        style="display: inline-block; background-color: #1b9e3e; color: #fff; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600;">-->
+<!--                        Track Package-->
+<!--                    </a>-->
+<!--                </p>-->
+<!--                {% endif %}-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--    </thead>-->
+<!--</table>-->
+{% endif %}
+
+<!-- Delivery Info -->
+<table class="content-table" style="margin-top: 25px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto; line-height: 1.5; color: #939393;">
+                    Your package will be delivered to:
+                </p>
+                <p style="font-size: 16px; color: #333; width: 74%; margin: 5px auto;">
+                    {{ order_item.order.address }}, {{ order_item.order.lga }}, {{order_item.order.state}}
+                </p>
+                <p style="font-size: 15px; color: #939393; width: 74%; margin: 5px auto;">
+                    Estimated Delivery: <strong>{{ order_item.estimated_delivery_date_down }} - {{ order_item.estimated_delivery_date_up }}</strong>
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Footer -->
+<table class="content-table" style="margin-top: 30px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block; text-align: center;">
+                <p
+                    style="font-size: 16px; font-weight: 600; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    Thank you for shopping with us! You can view your order details anytime from your dashboard.
+                </p>
+<!--                <a href="{{ order_tracking_url }}"-->
+<!--                    style="display: inline-block; background-color: #1b9e3e; color: #fff; text-decoration: none; padding: 12px 30px; margin-top: 15px; border-radius: 8px; font-weight: 600;">-->
+<!--                    View My Order-->
+<!--                </a>-->
+            </td>
+        </tr>
+    </thead>
+</table>
+{% endblock content %}

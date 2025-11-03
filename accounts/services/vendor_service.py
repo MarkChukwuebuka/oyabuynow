@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q, Avg
@@ -95,7 +96,25 @@ class VendorService(CustomRequestUtil):
 
         message = "Vendor application request has been submitted successfully. An email will be sent to you with an update"
 
-        #send_email()
+        email = vp.business_email if vp.business_email else vp.user.email
+
+        admin_email_context = {
+            'review_link' : f'{settings.DOMAIN}/admin/accounts/vendorprofile/{vp.id}/change/',
+            'vendor_name' : vp.business_name,
+            'vendor_email' : email,
+            'vendor_phone' : vp.business_phone if vp.business_phone else vp.user.phone
+        }
+        #notify vendor
+        send_email(
+            'emails/vendor-application-processing.html', 'Vendor Application Received',
+            email, {'vendor_name': vp.business_name}
+        )
+        # notify admin
+        send_email(
+            'emails/vendor-application-processing.html', 'Vendor Application Received',
+            settings.ADMIN_EMAIL, admin_email_context
+        )
+
         return message, None
 
 

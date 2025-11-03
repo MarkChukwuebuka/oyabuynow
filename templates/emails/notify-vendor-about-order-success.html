@@ -1,0 +1,111 @@
+
+{% extends './partials/base.html' %}
+
+{% load currency_filters %}
+{% load static %}
+
+{% block content %}
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <td align="center">
+                <img src="{% static 'frontend/assets/images/order-success.png' %}" alt="New Order" style="width: 120px; height: auto;">
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 22px; margin: 0;">New Order Received 🛒</h3>
+            </td>
+
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 18px; margin: 15px 0 5px; color: #666;">
+                    Hi {{ vendor_name|default:"Vendor" }},
+                </h3>
+            </td>
+
+            <td>
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    You’ve received a new order that includes your product(s). Below are the details you need to prepare for fulfillment.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Vendor Product Summary Table -->
+<table style="margin: 25px auto; border-collapse: collapse; width: 80%; border: 1px solid #eee;" cellpadding="10">
+    <thead>
+        <tr style="background-color: #f5f5f5; text-align: left;">
+            <th style="font-size: 16px;">Product</th>
+            <th style="font-size: 16px;">Quantity</th>
+            <th style="font-size: 16px;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in vendor_products %}
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="font-size: 15px; color: #333;">{{ item.name }}</td>
+            <td style="font-size: 15px; color: #333;">{{ item.quantity }}</td>
+            <td style="font-size: 15px; color: #333;">{{ item.price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr style="background-color: #fafafa;">
+            <td colspan="2" style="text-align: right; font-weight: 700;">Total for Your Products:</td>
+            <td style="font-weight: 700; color: #1b9e3e;">{{ vendor_total }}</td>
+        </tr>
+    </tfoot>
+</table>
+
+<!-- Order Details -->
+<table class="content-table" style="margin-top: 25px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <h4 style="font-size: 18px; font-weight: 700; margin: 10px 0;">Order Details</h4>
+                <p style="font-size: 16px; color: #333; margin: 5px 0;">
+                    <strong>Order ID:</strong> #{{ order_number }}
+                </p>
+                <p style="font-size: 16px; color: #333; margin: 5px 0;">
+                    <strong>Customer:</strong> {{ customer_name }}
+                </p>
+                <p style="font-size: 16px; color: #333; margin: 5px 0;">
+                    <strong>Shipping Address:</strong> {{ delivery_address }}
+                </p>
+                <p style="font-size: 16px; color: #333; margin: 5px 0;">
+                    <strong>Estimated Delivery:</strong> {{ estimated_delivery_date }}
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Next Steps -->
+<table class="content-table" style="margin-top: 30px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block; text-align: center;">
+                <p
+                    style="font-size: 16px; font-weight: 600; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    Please review the order and get ready to ship the items. You can view the full order details on your vendor dashboard.
+                </p>
+                <a href="{{ vendor_order_dashboard_url }}"
+                    style="display: inline-block; background-color: #1b9e3e; color: #fff; text-decoration: none; padding: 12px 30px; margin-top: 15px; border-radius: 8px; font-weight: 600;">
+                    View Order in Dashboard
+                </a>
+            </td>
+        </tr>
+    </thead>
+</table>
+{% endblock content %}

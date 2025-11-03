@@ -26,6 +26,7 @@
                                 {% csrf_token %}
 
                                 <input type="hidden" name="next" value="{{ request.GET.next }}">
+                                <input type="hidden" name="otp_type" value="{{ otp_type }}">
                                 <div class="col-12">
                                     <div class="form-floating theme-form-floating log-in-form">
                                         <input type="email" class="form-control" name="email" id="email" placeholder="Email Address">

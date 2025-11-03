@@ -16,6 +16,10 @@ class HomeView(View, CustomRequestUtil):
     def get(self, request, *args, **kwargs):
         product_service = ProductService(self.request)
 
+        self.request.session.pop('email', None)
+        self.request.session.pop('otp_type', None)
+
+
         top_rated = product_service.fetch_list()[:10]
         new_arrivals = product_service.fetch_list()[:10]
         best_seller = product_service.fetch_list().order_by("-quantity_sold")[:10]
@@ -61,55 +65,3 @@ class AboutView(View, CustomRequestUtil):
         return self.process_request(request)
 
 
-
-
-def search_suggestions(request):
-    query = request.GET.get('q', '').strip()
-    if not query:
-        return JsonResponse({"results": {}})
-
-    msearch = MultiSearch()
-    msearch = (
-        msearch.add(
-            Search(index='products').query(
-                'multi_match', query=query,
-                fields=['name', 'short_description', 'description', 'tags', 'brand', 'category', 'subcategory']
-            )[0:5]
-        )
-        .add(Search(index='categories').query('match', name=query)[0:5])
-        .add(Search(index='subcategories').query('match', name=query)[0:5])
-        .add(Search(index='brands').query('match', name=query)[0:5])
-        .add(Search(index='tags').query('match', name=query)[0:5])
-    )
-
-    responses = msearch.execute()
-
-    grouped_results = {
-        "products": [],
-        "categories": [],
-        "subcategories": [],
-        "brands": [],
-        "tags": [],
-    }
-
-    # Map results
-    for idx, resp in enumerate(responses):
-        index_name = resp.hits.hits[0]['_index'] if resp.hits.hits else None
-        if not index_name:
-            continue
-
-        if index_name == 'products':
-            grouped_results["products"] = [
-                {"name": hit.name, "category": hit.category, "brand": hit.brand}
-                for hit in resp
-            ]
-        elif index_name == 'categories':
-            grouped_results["categories"] = [{"name": hit.name} for hit in resp]
-        elif index_name == 'subcategories':
-            grouped_results["subcategories"] = [{"name": hit.name, "category": hit.category} for hit in resp]
-        elif index_name == 'brands':
-            grouped_results["brands"] = [{"name": hit.name} for hit in resp]
-        elif index_name == 'tags':
-            grouped_results["tags"] = [{"name": hit.name} for hit in resp]
-
-    return JsonResponse({"results": grouped_results})

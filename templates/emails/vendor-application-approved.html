@@ -46,7 +46,7 @@
     <thead>
         <tr style="display: block;">
             <td style="display: block; text-align: center;">
-                <a href="{{ vendor_dashboard_link|default:'#' }}"
+                <a href="{% url 'vendor-dashboard-home' %}"
                     style="background-color: #28a745; color: #fff; text-decoration: none; font-size: 17px; font-weight: 600; padding: 12px 25px; border-radius: 8px; display: inline-block;">
                     Go to Vendor Dashboard
                 </a>
@@ -62,7 +62,7 @@
             <td style="display: block;">
                 <p
                     style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
-                    From your dashboard, you can manage your inventory, track sales, respond to customer inquiries,
+                    From your dashboard, you can manage your inventory, track sales,
                     and access useful insights to grow your business.
                 </p>
             </td>

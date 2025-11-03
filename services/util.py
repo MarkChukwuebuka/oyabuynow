@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Union, TypeVar
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.models import AnonymousUser
@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.timezone import is_aware, make_aware
 
-from accounts.models import UserTypes
+from accounts.models import UserTypes, VendorProfile
 
 T = TypeVar("T")
 
@@ -66,9 +66,11 @@ class CustomRequestUtil(CustomPermissionRequired):
 
     @property
     def auth_vendor_profile(self):
-        if self.auth_user:
+        if not self.auth_user:
+            return None
+        try:
             return self.auth_user.vendor_profile
-        else:
+        except VendorProfile.DoesNotExist:
             return None
 
     def log_activity(self, activity, data, note=None):
@@ -127,18 +129,24 @@ class CustomRequestUtil(CustomPermissionRequired):
         else:
             response = response_raw_data
 
-        if error_detail:
+        if error_detail and not response:
             messages.error(self.request, error_detail)
             if self.template_on_error:
                 return render(self.request, self.template_on_error, self.context)
 
             if self.view_on_error:
                 return redirect(self.view_on_error)
-        else:
+
+        elif response and not error_detail:
             if isinstance(response, str):
                 messages.success(self.request, response)
             else:
                 self.context[self.context_object_name] = response
+
+        elif response and error_detail:
+            messages.error(self.request, error_detail)
+            return redirect(response)
+
 
         if self.template_name:
             return render(self.request, self.template_name, self.context)
@@ -169,7 +177,7 @@ def compare_password(input_password, hashed_password):
     return check_password(input_password, hashed_password)
 
 
-def send_email(html_template, context, subject, email):
+def send_email(html_template, subject, email, context):
     html_message = render_to_string(html_template, context=context)
     email_from = settings.EMAIL_HOST_USER
     recipient_list = [email]

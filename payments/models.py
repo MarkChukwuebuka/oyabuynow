@@ -1,6 +1,9 @@
 import uuid
+from datetime import timedelta
 
 from django.db import models
+from django.utils import timezone
+
 from accounts.models import User
 from crm.models import BaseModel
 from products.models import Product
@@ -67,7 +70,6 @@ class Order(BaseModel):
 
 
 
-
 class OrderItem(BaseModel):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True)
@@ -75,27 +77,48 @@ class OrderItem(BaseModel):
     price = models.IntegerField(null=True)
     quantity = models.IntegerField(default=1)
     status = models.CharField(max_length=25, choices=OrderStatusChoices.choices, default=OrderStatusChoices.ordered)
+    ref = models.CharField(max_length=50, null=True, blank=True)
+    estimated_delivery_date_down = models.DateField(null=True, blank=True)
+    estimated_delivery_date_up = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f'{self.order} - {self.product}'
 
     def save(self, *args, **kwargs):
-        if self.pk is not None:
-            old_order = OrderItem.objects.get(pk=self.pk)
-            # Check if the status has changed to "shipped"
-            context = {
-                'name': self.order.first_name,
-                'ref': self.order.ref,
-            }
-            if old_order.status != self.status and self.status == OrderStatusChoices.shipped:
-                self.order.update_overall_status()
-                pass
-                # send_email('emails/order-shipped.html', context, 'Order Shipped', self.email)
+        if not self.estimated_delivery_date_down or not self.estimated_delivery_date_up:
+            base_date = getattr(self, 'created_at', timezone.now())
+            self.estimated_delivery_date_down = base_date + timedelta(days=7)
+            self.estimated_delivery_date_up = base_date + timedelta(days=9)
 
-            if old_order.status != self.status and self.status == OrderStatusChoices.delivered:
+        order_ref = self.order.ref
+        if order_ref:
+            if self.ref:
+                if order_ref != self.ref.split("-ITM-")[0]:
+                    self.ref = f"{order_ref}-ITM-{self.pk}"
+            else:
+                self.ref = f"{order_ref}-ITM-{self.pk}"
+
+        if self.pk is not None:
+            old_order_item = OrderItem.objects.get(pk=self.pk)
+
+            email_context = {
+                'customer_name': self.order.first_name,
+                'order_item' : old_order_item,
+            }
+
+            if old_order_item.status != self.status and self.status == OrderStatusChoices.shipped:
                 self.order.update_overall_status()
-                pass
-                # send_email('emails/order-shipped.html', context, 'Order Shipped', self.email)
+
+                # send_email(
+                #     'emails/order-shipped.html', 'Order Shipped', self.order.email, email_context
+                # )
+
+            if old_order_item.status != self.status and self.status == OrderStatusChoices.delivered:
+                self.order.update_overall_status()
+
+                # send_email(
+                #     'emails/order-delivered.html', 'Order Delivered', self.order.email, email_context
+                # )
 
         super().save(*args, **kwargs)
 
@@ -104,7 +127,7 @@ class OrderItem(BaseModel):
 
 class Transaction(BaseModel):
     order = models.ForeignKey(Order, related_name="transactions", on_delete=models.CASCADE)
-    reference = models.CharField(max_length=100, unique=True)
+    reference = models.CharField(max_length=100)
     status = models.CharField(max_length=25)
     amount = models.FloatField()
     gateway_response = models.JSONField(blank=True, null=True)

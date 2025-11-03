@@ -1,4 +1,4 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -119,8 +119,8 @@
                         <tr class="header"
                             style="background-color: #f7f7f7;display: flex;align-items: center;justify-content: space-between;width: 100%;">
                             <td class="header-logo" style="padding: 10px 32px;">
-                                <a href="{% url home %}" style="display: block; text-align: left;">
-                                    <img src="{% static 'frontend/assets/images/logo/logo.png' %}" class="main-logo" alt="logo">
+                                <a href="{% url 'home' %}" style="display: block; text-align: left;">
+                                    <img src="{% static 'frontend/assets/images/logo/logo2.png' %}" class="main-logo" alt="logo">
                                 </a>
                             </td>
                             <td class="header-menu" style="display: block; padding: 10px 32px;text-align: right;">

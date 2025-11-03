@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from accounts.models import User, VendorProfile, PasswordResetRequest
+from accounts.models import User, VendorProfile, OTPRequest
 from crm.admin import BaseAdmin
 
 
@@ -34,8 +34,8 @@ class UserAdmin(BaseUserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
 
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'is_active', 'date_joined')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'date_joined')
+    list_display = ('email', 'first_name', 'last_name', 'is_verified', 'user_type', 'date_joined')
+    list_filter = ('is_staff', 'is_verified', 'user_type', 'is_active', 'date_joined')
     search_fields = ('email', 'first_name', 'last_name')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions')
@@ -44,7 +44,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'phone_number', 'address')}),
         ('Permissions', {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'user_type'),
+            'fields': ('is_verified', 'is_active', 'is_staff', 'is_superuser', 'user_type'),
         }),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
@@ -149,8 +149,8 @@ class VendorProfileAdmin(admin.ModelAdmin):
         return "No profile photo uploaded"
 
 
-@admin.register(PasswordResetRequest)
-class PasswordResetRequestAdmin(admin.ModelAdmin):
+@admin.register(OTPRequest)
+class OTPRequestAdmin(admin.ModelAdmin):
     list_display = ['user', 'is_used', 'created_at', 'expires_at']
     list_filter = ['user', 'created_at']
     search_fields = ['user__email']

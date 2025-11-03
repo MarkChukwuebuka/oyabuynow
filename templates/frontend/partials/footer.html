@@ -86,7 +86,7 @@
                         <div class="footer-logo">
                             <div class="theme-logo">
                                 <a href="{% url 'home' %}">
-                                    <img src="{% static  'frontend/assets/images/logo/logo.png' %}" class="blur-up lazyload" alt="">
+                                    <img src="{% static  'frontend/assets/images/logo/logo2.png' %}" class="blur-up lazyload" alt="">
                                 </a>
                             </div>
 
@@ -480,7 +480,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <div>
-                        <h5 class="modal-title w-100" id="deal_today">Deal Today</h5>
+                        <h5 class="modal-title w-100" id="deal_today">Deals of the day</h5>
                         <p class="mt-1 text-content">Recommended deals for you.</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal">
@@ -489,7 +489,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="deal-offer-box">
+                        {% if deals_of_the_day %}
                         <ul class="deal-offer-list">
+
+                            {% for product in deals_of_the_day %}
                             <li class="list-1">
                                 <div class="deal-offer-contain">
                                     <a href="{% url 'shop' %}" class="deal-image">
@@ -503,49 +506,11 @@
                                     </a>
                                 </div>
                             </li>
-
-                            <li class="list-2">
-                                <div class="deal-offer-contain">
-                                    <a href="{% url 'shop' %}" class="deal-image">
-                                        <img src="../assets/images/vegetable/product/11.png" class="blur-up lazyload"
-                                            alt="">
-                                    </a>
-
-                                    <a href="{% url 'shop' %}" class="deal-contain">
-                                        <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                                        <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
-                                    </a>
-                                </div>
-                            </li>
-
-                            <li class="list-3">
-                                <div class="deal-offer-contain">
-                                    <a href="{% url 'shop' %}" class="deal-image">
-                                        <img src="../assets/images/vegetable/product/12.png" class="blur-up lazyload"
-                                            alt="">
-                                    </a>
-
-                                    <a href="{% url 'shop' %}" class="deal-contain">
-                                        <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                                        <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
-                                    </a>
-                                </div>
-                            </li>
-
-                            <li class="list-1">
-                                <div class="deal-offer-contain">
-                                    <a href="{% url 'shop' %}" class="deal-image">
-                                        <img src="../assets/images/vegetable/product/13.png" class="blur-up lazyload"
-                                            alt="">
-                                    </a>
-
-                                    <a href="{% url 'shop' %}" class="deal-contain">
-                                        <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                                        <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
-                                    </a>
-                                </div>
-                            </li>
+                            {% endfor %}
                         </ul>
+                        {% else %}
+                            <h2>There are no deals at the moment, please check back later</h2>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -554,13 +519,13 @@
     <!-- Deal Box Modal End -->
 
     <!-- Add to cart Modal Start -->
-    <div class="add-cart-box">
-        <div class="add-image">
-            <img src="../assets/images/cake/pro/1.jpg" class="img-fluid blur-up lazyload" alt="">
-        </div>
+<!--    <div class="add-cart-box">-->
+<!--        <div class="add-image">-->
+<!--            <img src="../assets/images/cake/pro/1.jpg" class="img-fluid blur-up lazyload" alt="">-->
+<!--        </div>-->
 
-        <div class="add-contain">
-            <h6>Added to Cart</h6>
-        </div>
-    </div>
+<!--        <div class="add-contain">-->
+<!--            <h6>Added to Cart</h6>-->
+<!--        </div>-->
+<!--    </div>-->
     <!-- Add to cart Modal End -->

@@ -1,0 +1,132 @@
+{% extends './partials/base.html' %}
+
+{% load currency_filters %}
+{% load static %}
+
+{% block content %}
+<table class="content-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <td align="center">
+                <img src="{% static 'frontend/assets/images/order-delivered.jpg' %}" alt="Order Delivered" style="width: 120px; height: auto;">
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 35px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 22px; margin: 0;">Your Order Has Been Delivered 🎉</h3>
+            </td>
+
+            <td style="display: block;">
+                <h3 style="font-weight: 700; font-size: 18px; margin: 15px 0 5px; color: #666;">
+                    Hi {{ customer_name|default:"Customer" }},
+                </h3>
+            </td>
+
+            <td>
+                <p
+                    style="font-size: 17px; font-weight: 600; width: 74%; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    We’re happy to let you know that your order <strong>#{{ order_item.ref }}</strong> has been successfully delivered.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Order Summary Table -->
+<table style="margin: 25px auto; border-collapse: collapse; width: 80%; border: 1px solid #eee;" cellpadding="10">
+    <thead>
+        <tr style="background-color: #f5f5f5; text-align: left;">
+            <th style="font-size: 16px;">Image</th>
+            <th style="font-size: 16px;">Item</th>
+            <th style="font-size: 16px;">Quantity</th>
+            <th style="font-size: 16px;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="font-size: 15px; color: #333;">
+                {% with order_item.product.product_media.first as first_image %}
+                    {% if first_image %}
+                        <img src="{{first_image.image.url}}" class="img-fluid blur-up lazyload" alt="{{ order_item.product.name }}">
+                    {% endif %}
+                {% endwith %}
+            </td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.product.name }}</td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.quantity }}</td>
+            <td style="font-size: 15px; color: #333;">{{ order_item.price|naira }}</td>
+        </tr>
+
+    </tbody>
+
+</table>
+
+<!-- Delivery Summary -->
+<table class="content-table" style="margin-top: 20px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block;">
+                <p
+                    style="font-size: 16px; color: #333; width: 74%; margin: 8px auto; line-height: 1.6;">
+                    Delivered to: <br>
+                    <strong>{{ order_item.order.address }}, {{ order_item.order.lga }}, {{order_item.order.state}}</strong><br>
+                    on <strong>{{ order_item.updated_at|date:"F j, Y" }}</strong>.
+                </p>
+<!--                {% if courier_name %}-->
+<!--                <p style="font-size: 15px; color: #666; width: 74%; margin: 5px auto;">-->
+<!--                    Delivered via <strong>{{ courier_name }}</strong>-->
+<!--                </p>-->
+<!--                {% endif %}-->
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Thank You + CTA -->
+<table class="content-table" style="margin-top: 35px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block; text-align: center;">
+            <td style="display: block;">
+                <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 10px;">We’d Love Your Feedback ❤️</h4>
+                <p
+                    style="font-size: 16px; color: #666; width: 80%; margin: 0 auto 15px; line-height: 1.5;">
+                    Your opinion helps us and our vendors improve the quality of our products and service.
+                    Please take a moment to rate your experience.
+                </p>
+                <a href="{% url 'product-detail' order_item.product.slug %}#review"
+                    style="display: inline-block; background-color: #1b9e3e; color: #fff; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600;">
+                    Leave a Review
+                </a>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<!-- Footer -->
+<table class="content-table" style="margin-top: 30px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block; text-align: center;">
+            <td style="display: block;">
+                <p
+                    style="font-size: 15px; font-weight: 600; margin: 8px auto 0; line-height: 1.5; color: #939393;">
+                    Thank you for shopping with us! We hope to see you again soon.
+                </p>
+                <a href="{{ shop_link|default:'#' }}"
+                    style="display: inline-block; background-color: #333; color: #fff; text-decoration: none; padding: 10px 25px; margin-top: 15px; border-radius: 8px; font-weight: 600;">
+                    Continue Shopping
+                </a>
+            </td>
+        </tr>
+    </thead>
+</table>
+{% endblock content %}

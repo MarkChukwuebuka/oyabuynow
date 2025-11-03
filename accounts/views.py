@@ -4,13 +4,13 @@ import requests
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.db.models import Sum, F
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from accounts.models import User, VendorStatus
+from accounts.models import User, VendorStatus, OTPTypes
 from accounts.services.auth_service import AuthService
 from accounts.services.user_service import UserService
 from accounts.services.vendor_service import VendorService
@@ -43,6 +43,7 @@ class UserLoginView(View, CustomRequestUtil):
         }
 
         next_url = request.POST.get('next', request.GET.get('next', '/'))
+        request.session["otp_type"] = OTPTypes.signup
 
         return self.process_request(
             request, target_view=next_url, target_function=auth_service.login, payload=payload
@@ -72,8 +73,15 @@ class UserSignupView(View, CustomRequestUtil):
             'address': request.POST.get('address'),
         }
 
+        auth_service.create_otp_request(
+            otp_type=OTPTypes.signup, email=request.POST.get("email")
+        )
+
+        request.session["email"] = request.POST.get("email")
+        request.session["otp_type"] = OTPTypes.signup
+
         return self.process_request(
-            request, target_view="login", target_function=auth_service.signup, payload=payload
+            request, target_view="verify-otp", target_function=auth_service.signup, payload=payload
         )
 
 
@@ -113,20 +121,30 @@ class VerifyOtpView(View, CustomRequestUtil):
 
     def get(self, request, *args, **kwargs):
         self.extra_context_data["email"] = request.session.get("email")
+        self.extra_context_data["otp_type"] = request.session.get("otp_type")
+        print(f'---------------{request.session.get("otp_type")}')
         return self.process_request(request)
 
     def post(self, request, *args, **kwargs):
         auth_service = AuthService(self.request)
         self.template_name = None
         self.template_on_error = 'frontend/verify-otp.html'
-
+        otp_type = request.POST.get('otp_type')
         payload = {
             'otp': request.POST.get('otp'),
             'email': request.POST.get('email'),
+            'otp_type': otp_type
         }
 
+        if otp_type == OTPTypes.signup:
+            target_view = "home"
+        elif otp_type == OTPTypes.login:
+            target_view = "login"
+        else:
+            target_view = "create-new-password"
+
         return self.process_request(
-            request, target_view="create-new-password", target_function=auth_service.verify_otp, payload=payload
+            request, target_view=target_view, target_function=auth_service.verify_otp, payload=payload
         )
 
 class CreateNewPasswordView(View, CustomRequestUtil):
@@ -303,14 +321,57 @@ class VendorOrdersView(LoginRequiredMixin, View, CustomRequestUtil):
             return redirect("onboard-vendor")
 
         vendor_service = VendorService(self.request)
-        order_service = OrderItemService(request)
+        order_service = OrderService(request)
 
-        order_items = order_service.fetch_list(paginate=True)
+        orders = order_service.fetch_list(paginate=True)
 
-        self.extra_context_data["order_items"] = order_items
+        self.extra_context_data["page_obj"] = orders
 
         return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
 
+
+
+class VendorOrderDetailsView(LoginRequiredMixin, View, CustomRequestUtil):
+    template_name = 'frontend/vendor-dashboard-order-details.html'
+    context_object_name = 'vendor'
+
+
+    @vendor_required
+    def get(self, request, *args, **kwargs):
+        if self.auth_vendor_profile.status == VendorStatus.pending:
+            messages.info(request, "Your Vendor application is being processed")
+            return redirect("home")
+
+        if self.auth_vendor_profile.status == VendorStatus.rejected:
+            messages.error(
+                request,
+                f"Your Vendor application was rejected. {self.auth_vendor_profile.reason_for_rejection}, please try applying again."
+            )
+            return redirect("onboard-vendor")
+
+        vendor_service = VendorService(self.request)
+        order_service = OrderService(request)
+
+        order, _ = order_service.fetch_single_by_ref(kwargs.get("ref"))
+        if not order:
+            return None, _
+
+        order_items = OrderItem.available_objects.filter(order=order, product__created_by=self.auth_user)
+        if order_items.filter(status=OrderStatusChoices.ordered):
+            status = OrderStatusChoices.ordered
+        elif order_items.filter(status=OrderStatusChoices.shipped):
+            status = OrderStatusChoices.shipped
+        else:
+            status = OrderStatusChoices.delivered
+
+        self.extra_context_data = {
+            "order" : order,
+            "title" : f"Order - {order.ref}",
+            "order_items" : order_items,
+            "status" : status
+        }
+
+        return self.process_request(request, target_function=vendor_service.fetch_authenticated_vendor)
 
 
 class VendorProfileView(LoginRequiredMixin, View, CustomRequestUtil):
@@ -468,7 +529,7 @@ def resend_otp(request):
                 status=429
             )
 
-        auth_service.create_password_reset_request(user)
+        auth_service.create_otp_request(user)
 
         return JsonResponse({
             "success": True,

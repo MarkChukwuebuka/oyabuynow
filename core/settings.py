@@ -61,7 +61,6 @@ INSTALLED_APPS = [
     'cart',
     'payments',
     'media',
-    'search',
 ]
 
 MIDDLEWARE = [
@@ -185,12 +184,25 @@ cloudinary.config(
     api_secret=os.getenv('API_SECRET'),
 )
 
+DOMAIN = os.getenv('DOMAIN')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+
 # EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
 # EMAIL_HOST = 'smtp.zoho.com'  # zoho
 # EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 # EMAIL_PORT = 465
 # EMAIL_USE_TLS = True
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+
+if DEBUG:
+    # Looking to send emails in production? Check out our Email API/SMTP product!
+    EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+    EMAIL_HOST_USER = '1f3389811b4b65'
+    EMAIL_HOST_PASSWORD = '1ffed331428d21'
+    EMAIL_PORT = '2525'
 
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"

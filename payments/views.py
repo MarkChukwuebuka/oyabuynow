@@ -45,6 +45,7 @@ def paystack_verify_payment(request, order_id):
 
     response_data = response.json()
 
+
     Transaction.objects.create(
         order=order,
         reference=reference,
@@ -67,7 +68,19 @@ def paystack_verify_payment(request, order_id):
                 for item in order.items.all():
                     product_service.update_quantity_sold(item.product, item.quantity)
 
-                # TODO: send success email
+                email_context = {
+                    'customer_name' : order.first_name,
+                    'order' : order
+                }
+
+                # email customer
+                # send_email(
+                #     'emails/order-success.html', 'Order Success', order.email, email_context
+                # )
+
+                # group and email the vendor(s)
+                order_service.group_order_items_by_vendor(order)
+
                 return redirect(f"/payment-status/{order.id}/?payment_status=Paid")
 
     return redirect(f"/payment-status/{order.id}/?payment_status=Failed")
@@ -154,7 +167,8 @@ def check_out(request):
                 product=product_instance,
                 original_price=original_price,
                 price=item_cost,
-                quantity=quantity_in_cart
+                quantity=quantity_in_cart,
+
             )
 
         order.total_cost = total_cost
@@ -226,26 +240,29 @@ class RetrieveUpdateDeleteOrderView(View, CustomRequestUtil):
 
 @csrf_exempt
 def update_order_item_status(request):
-    order_item_service = OrderItemService(request)
+    order_service = OrderService(request)
 
     if request.method == "POST":
         data = json.loads(request.body)
-        order_item_id = data.get("order_item_id")
+        order_id = data.get("order_id")
         action = data.get("action")
 
-        order_item, _ = order_item_service.fetch_single(order_item_id)
-        if not order_item:
+        order, _ = order_service.fetch_single_by_id(order_id)
+        if not order:
             return JsonResponse({
                 "success": False,
                 "message": _
             })
 
+        order_items = OrderItem.available_objects.filter(order=order, product__created_by=request.user)
 
         if action == "shipped":
-            order_item.status = OrderStatusChoices.shipped
-            order_item.save()
 
-            message = "This item has been marked as 'Shipped'."
+            for item in order_items:
+                item.status = OrderStatusChoices.shipped
+                item.save()
+
+            message = "This order has been marked as 'Shipped'."
 
             return JsonResponse({
                 "success": True,
@@ -253,10 +270,11 @@ def update_order_item_status(request):
             })
 
         elif action == "delivered":
-            order_item.status = OrderStatusChoices.delivered
-            order_item.save()
+            for item in order_items:
+                item.status = OrderStatusChoices.delivered
+                item.save()
 
-            message = "This item has been marked as 'Delivered'."
+            message = "This order has been marked as 'Delivered'."
 
             return JsonResponse({
                 "success": True,

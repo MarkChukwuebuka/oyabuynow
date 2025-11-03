@@ -1,0 +1,203 @@
+{% extends "./vendor-dashboard-base.html" %}
+{% load static %}
+{% load currency_filters %}
+{% load rating_tags dict_extras %}
+
+{% block dashboard_content %}
+<div class="dashboard-order">
+  <div class="title d-flex justify-content-between align-items-center">
+    <div>
+      <h2>Order Details</h2>
+      <p class="mb-0 text-muted">Order Ref: <strong>{{ order.ref }}</strong></p>
+    </div>
+
+    <!-- Action button to mark entire order -->
+    {% if status == "Ordered" %}
+
+        <button class="btn btn-secondary btn-sm btn-animation"
+            data-bs-toggle="modal" data-bs-target="#update-status" data-action="shipped"
+                data-id="{{order.id}}"
+        >
+          Mark as Shipped
+        </button>
+    {% elif status == "Shipped" %}
+      <button class="btn btn-success btn-sm btn-animation"
+        data-bs-toggle="modal" data-bs-target="#update-status" data-action="delivered"
+              data-id="{{order.id}}"
+      >
+          Mark as Delivered
+      </button>
+
+    {% else %}
+      <span class="badge bg-success fs-6">Delivered</span>
+    {% endif %}
+  </div>
+    <hr>
+  <div class="mt-3">
+    <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+    <p><strong>Total Items:</strong> {{ order.items_count }}</p>
+    <p><strong>Total Value:</strong> {{ order.total_value|naira }}</p>
+  </div>
+    <hr>
+  <div class="mt-3">
+    <p><strong>Name:</strong> {{ order.first_name }} {{ order.last_name }}</p>
+    <p><strong>Email:</strong> {{ order.email }}</p>
+    <p><strong>Phone:</strong> {{ order.phone }}</p>
+    <p><strong>Address:</strong> {{ order.address }}, {{ order.lga }}, {{order.state}}</p>
+  </div>
+
+  {% if order_items %}
+  <div class="order-tab dashboard-bg-box mt-4">
+    <div class="table-responsive">
+      <table class="table order-table">
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Image</th>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order_items %}
+          <tr>
+              <td>{{item.ref}}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                  {% with item.product.product_media.first as first_media %}
+                    {% if first_media %}
+                      <img src="{{ first_media.image.url }}" alt="{{ item.product.name }}"
+                           style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 10px;">
+                    {% endif %}
+                  {% endwith %}
+              </div>
+            </td>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.price|naira }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>
+              <span class="badge
+                {% if item.status == 'Pending' %} bg-danger
+                {% elif item.status == 'Shipped' %} bg-info
+                {% elif item.status == 'Delivered' %} bg-success
+                {% else %} bg-secondary{% endif %}">
+                {{ item.status }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <p>No items found for this order.</p>
+  {% endif %}
+
+</div>
+
+
+
+
+<div class="modal fade theme-modal" id="update-status" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Change order item status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <h3 id="update-message">Are you sure you want to mark this order as shipped?</h3>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn theme-bg-color btn-md fw-bold text-light update-btn">
+          Proceed
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+<script>
+  const csrfToken = "{{ csrf_token }}";
+
+  document.addEventListener("DOMContentLoaded", function () {
+
+    let currentProductId = null;
+    const updateModal = document.getElementById("update-status");
+    const updateMessage = document.getElementById("update-message");
+    const updateBtn = updateModal.querySelector(".update-btn");
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Open modal
+    document.querySelectorAll("[data-bs-target='#update-status']").forEach(link => {
+      link.addEventListener("click", function () {
+        orderId = this.dataset.id;
+        action = this.dataset.action;
+        updateMessage.textContent = `Are you sure you want to mark this order as "${action}"?`;
+      });
+    });
+
+    // Handle delete confirmation
+    updateBtn.addEventListener("click", async function () {
+      if (!orderId) return;
+
+      try {
+        const response = await fetch(`/update-order-item-status/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            action: action
+          })
+        });
+        const data = await response.json();
+         if (response.ok && data.success) {
+            showToast(data.message, "success");
+
+            await sleep(5000);
+
+            location.reload()
+
+         } else {
+            showToast(data.error || "An error occurred, please try again.", "error");
+         }
+
+          const modal = bootstrap.Modal.getInstance(updateModal);
+          modal.hide();
+
+      } catch (error) {
+        showToast("Network error. Please try again.", "error");
+        console.error("Network error:", error);
+      }
+    });
+  });
+</script>
+
+
+
+
+
+
+
+{% endblock %}

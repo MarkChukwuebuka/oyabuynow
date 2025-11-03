@@ -1,0 +1,81 @@
+{% extends './partials/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<table class="content-table" align="center" border="0" cellpadding="0" cellspacing="0" width="100%"
+    style="margin-top: 40px;">
+    <thead>
+        <tr>
+            <td align="center">
+                <img src="{% static 'frontend/images/welcome-poster.jpg' %}" alt="Welcome Image" style="width: 120px; height: auto;">
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="content-table" style="margin-top: 30px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <thead>
+        <tr style="display: block;">
+            <td style="display: block; text-align: center;">
+                <h3 style="font-weight: 700; font-size: 22px; margin: 0;">
+                    Welcome to Oyabuynow!
+                </h3>
+            </td>
+
+            <td style="display: block; text-align: center;">
+                <p style="font-size: 17px; font-weight: 600; margin: 15px 0; color: #939393;">
+                    Hi {{ first_name|default:"there" }},
+                </p>
+            </td>
+
+            <td>
+                <p style="font-size: 16px; font-weight: 500; line-height: 1.6; color: #939393; width: 80%; margin: 0 auto;">
+                    Thanks for signing up! To complete your registration, please verify your email address using the OTP below.
+                    This helps us secure your account and keep your experience safe.
+                </p>
+            </td>
+        </tr>
+    </thead>
+</table>
+
+<table class="otp-table" style="margin-top: 30px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <tr style="display: block;">
+        <td style="display: block; text-align: center;">
+            <div style="background-color: #f5f5f5; display: inline-block; padding: 15px 25px; border-radius: 10px;">
+                <h2 style="font-size: 32px; letter-spacing: 8px; font-weight: 700; margin: 0; color: #333;">
+                    {{ otp_code }}
+                </h2>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<table class="content-table" style="margin-top: 20px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <tr>
+        <td align="center">
+            <p style="font-size: 16px; font-weight: 500; color: #939393; width: 80%; margin: 15px auto 0; line-height: 1.6;">
+                Your OTP is valid for the next <strong>10 minutes</strong>. Please do not share it with anyone for security reasons.
+            </p>
+        </td>
+    </tr>
+</table>
+
+
+<table class="footer-table" style="margin-top: 40px;" align="center" border="0" cellpadding="0"
+    cellspacing="0" width="100%">
+    <tr>
+        <td align="center">
+            <p style="font-size: 15px; color: #777;">
+                Welcome aboard, and thank you for joining Our Marketplace.
+            </p>
+            <p style="font-size: 14px; color: #999;">
+                The Oyabuynow Team
+            </p>
+        </td>
+    </tr>
+</table>
+{% endblock content %}

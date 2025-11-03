@@ -111,7 +111,7 @@
                                                         </li>
                                                         {% if item.product.created_by %}
                                                         <li class="text-content">
-                                                            Sold By: {{item.product.created_by.vendor_profile.store_name}}
+                                                            Sold By: {{item.product.created_by.vendor_profile.store_name|default:"Oyabuynow"}}
                                                         </li>
                                                         {% endif %}
 
@@ -161,10 +161,10 @@
                                     </li>
                                     {% endfor %}
 
-                                    <li>
-                                        <h4>Vegetables Saving</h4>
-                                        <h4 class="price theme-color">$12.23</h4>
-                                    </li>
+<!--                                    <li>-->
+<!--                                        <h4>Vegetables Saving</h4>-->
+<!--                                        <h4 class="price theme-color">$12.23</h4>-->
+<!--                                    </li>-->
 
 <!--                                    <li>-->
 <!--                                        <h4>Coupon Discount</h4>-->

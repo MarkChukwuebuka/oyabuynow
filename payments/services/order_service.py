@@ -1,13 +1,13 @@
 import random
 import string
+from collections import defaultdict
 from datetime import datetime
 
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.utils import timezone
+from django.db.models import Q, Sum, Count
 
 from payments.models import Order, OrderItem
-from services.util import CustomRequestUtil
+from services.util import CustomRequestUtil, send_email
 
 
 def generate_order_ref(prefix="ORD"):
@@ -50,11 +50,37 @@ class OrderService(CustomRequestUtil):
 
         return order
 
-    def fetch_list(self):
-        return self.get_base_query().filter(user=self.auth_user)
+
+    def fetch_list(self, paginate=False):
+
+        orders = self.get_base_query().order_by('-created_at').distinct()
+
+        if paginate:
+            paginator = Paginator(orders, 15)  # 25 items per page
+
+            # get the current page number from request
+            page_number = self.request.GET.get("page", 1)
+            page_obj = paginator.get_page(page_number)
+
+            return page_obj
+
+        return orders
 
     def get_base_query(self):
-        qs = Order.objects.select_related("user").prefetch_related("items")
+        q = Q()
+        if self.auth_user and not self.auth_vendor_profile:
+            q &= Q(user=self.auth_user)
+        if self.auth_vendor_profile:
+            q &= Q(items__product__created_by=self.auth_user)
+
+        qs = Order.objects.filter(q).select_related("user").prefetch_related("items")
+
+        if self.auth_vendor_profile:
+            qs = qs.annotate(
+                items_count=Count('items', filter=Q(items__product__created_by=self.auth_user)),
+                total_value=Sum('items__price', filter=Q(items__product__created_by=self.auth_user))
+            )
+
 
         return qs
 
@@ -73,6 +99,48 @@ class OrderService(CustomRequestUtil):
 
         return order, None
 
+
+    # TODO: move to celery
+    def group_order_items_by_vendor(self, order):
+        vendor_items = defaultdict(list)
+
+        # Group items by vendor email
+        for item in order.items.select_related('product__created_by'):
+            vendor_user = item.product.created_by
+            vendor_email = getattr(vendor_user, 'vendor_profile', None)
+
+            if vendor_email and getattr(vendor_email, 'business_email', None):
+                email_key = vendor_email.business_email
+            else:
+                email_key = vendor_user.email
+
+            vendor_items[email_key].append(item)
+
+        # Send notification to each vendor
+        for email, items in vendor_items.items():
+            vendor_user = items[0].product.created_by
+            vendor_profile = getattr(vendor_user, 'vendor_profile', None)
+
+            email_context = {
+                'ordered_items': items,
+                'vendor_name': (
+                        getattr(vendor_profile, 'business_name', None)
+                        or getattr(vendor_profile, 'store_name', None)
+                        or vendor_user.get_full_name()
+                        or vendor_user.email
+                ),
+                'total_cost': sum(item.price for item in items),
+                'order_ref': order.ref,
+            }
+
+            send_email(
+                'emails/vendor-order-success.html',
+                'Incoming Order',
+                email,
+                email_context
+            )
+
+        return None
 
 
 class OrderItemService(CustomRequestUtil):
@@ -111,7 +179,7 @@ class OrderItemService(CustomRequestUtil):
         if self.auth_user and not self.auth_vendor_profile:
             q &= Q(order__user=self.auth_user)
 
-        qs = OrderItem.objects.select_related("product", "order")
+        qs = OrderItem.objects.filter(q).select_related("product", "order")
         return qs
 
 
@@ -121,3 +189,6 @@ class OrderItemService(CustomRequestUtil):
             return None, self.make_error("Order item does not exist")
 
         return order_item, None
+
+
+
