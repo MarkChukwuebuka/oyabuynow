@@ -73,20 +73,23 @@
                                             </div>
 
                                             <div class="col-md-6">
-                                                <div class="form-floating theme-form-floating">
-                                                    <input type="text" class="form-control" id="state" name="state"
-                                                        placeholder="State" value="{{last_order.state}}" required>
-                                                    <label for="state">State</label>
-                                                </div>
+                                              <div class="form-floating theme-form-floating">
+                                                <select id="state" name="state" class="form-select" required>
+                                                  <option value="">Select State</option>
+                                                </select>
+                                                <label for="state">State</label>
+                                              </div>
                                             </div>
 
                                             <div class="col-md-6">
-                                                <div class="form-floating theme-form-floating">
-                                                    <input type="text" class="form-control" id="lga" name="lga"
-                                                        placeholder="LGA" value="{{last_order.lga}}" required>
-                                                    <label for="lga">LGA</label>
-                                                </div>
+                                              <div class="form-floating theme-form-floating">
+                                                <select id="lga" name="lga" class="form-select" required>
+                                                  <option value="">Select LGA</option>
+                                                </select>
+                                                <label for="lga">LGA</label>
+                                              </div>
                                             </div>
+
 
 
                                     </div>
