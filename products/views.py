@@ -2,11 +2,13 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from accounts.services.vendor_service import VendorService
 from products.models import Wishlist, Subcategory
+from products.search import ProductSearch
 from products.services.category_brand_service import CategoryService, ColorService, BrandService, TagService, \
     SubcategoryService
 from products.services.product_service import ProductService
@@ -382,4 +384,116 @@ class WishlistView(LoginRequiredMixin, View, CustomRequestUtil):
 def get_subcategories(request, category_id):
     subcategories = Subcategory.available_objects.filter(category_id=category_id).values('id', 'name')
     return JsonResponse(list(subcategories), safe=False)
+
+
+class ProductSearchView(View, CustomRequestUtil):
+    """API view for product search"""
+    template_name = "frontend/search-results.html"
+    extra_context_data = {
+        'title': "Search Results"
+    }
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """
+        GET /api/search/products/
+
+        Query parameters:
+        - q: Search query
+        - category: Category ID or name
+        - brand: Brand ID or name
+        - min_price: Minimum price
+        - max_price: Maximum price
+        - tags: Comma-separated tag names
+        - in_stock: true/false
+        - sort: relevance|price_asc|price_desc|newest
+        - page: Page number (default: 1)
+        - page_size: Items per page (default: 20)
+        """
+        try:
+            query = request.GET.get('q', None)
+            category = request.GET.get('category', None)
+            brand = request.GET.get('brand', None)
+            min_price = request.GET.get('min_price', None)
+            max_price = request.GET.get('max_price', None)
+            tags = request.GET.get('tags', None)
+            in_stock = request.GET.get('in_stock', None)
+            sort_by = request.GET.get('sort', 'relevance')
+            page = int(request.GET.get('page', 1))
+            page_size = int(request.GET.get('page_size', 20))
+
+            # Convert string parameters to appropriate types
+            if min_price:
+                min_price = float(min_price)
+            if max_price:
+                max_price = float(max_price)
+            if tags:
+                tags = [tag.strip() for tag in tags.split(',')]
+            if in_stock:
+                in_stock = in_stock.lower() == 'true'
+
+            # Try to convert category/brand to int if possible
+            try:
+                if category and category.isdigit():
+                    category = int(category)
+            except (ValueError, AttributeError):
+                pass
+
+            try:
+                if brand and brand.isdigit():
+                    brand = int(brand)
+            except (ValueError, AttributeError):
+                pass
+
+            # Perform search
+            results = ProductSearch.search_products(
+                query=query,
+            )
+
+            self.extra_context_data["results"] = results
+
+            return self.process_request(request)
+
+        except Exception as e:
+            return self.process_request(request)
+
+
+class ProductAutocompleteView(View):
+    """API view for product autocomplete"""
+
+    def get(self, request):
+        """
+        GET /api/search/autocomplete/
+
+        Query parameters:
+        - q: Search query (required)
+        - size: Number of suggestions (default: 10)
+        """
+        try:
+
+            query = request.GET.get('q', '')
+            size = int(request.GET.get('size', 10))
+
+            if not query:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Query parameter "q" is required'
+                }, status=400)
+
+            suggestions = ProductSearch.search_products(query)
+
+
+            return JsonResponse({
+                'success': True,
+                'suggestions': suggestions
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
 

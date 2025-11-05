@@ -45,10 +45,10 @@ class ContactView(View, CustomRequestUtil):
         return self.process_request(request)
 
 
-class FAQView(View, CustomRequestUtil):
-    template_name = "faqs.html"
+class ReturnsAndRefundView(View, CustomRequestUtil):
+    template_name = "frontend/returns-and-refunds.html"
     extra_context_data = {
-        "title": "FAQS",
+        "title": "Returns And Refund Policy",
     }
 
     def get(self, request, *args, **kwargs):
@@ -59,6 +59,29 @@ class AboutView(View, CustomRequestUtil):
     template_name = "about.html"
     extra_context_data = {
         "title": "About Us",
+    }
+
+    def get(self, request, *args, **kwargs):
+        return self.process_request(request)
+
+
+
+class PrivacyPolicyView(View, CustomRequestUtil):
+    template_name = "frontend/privacy-policy.html"
+    extra_context_data = {
+        "title": "Privacy Policy",
+    }
+
+    def get(self, request, *args, **kwargs):
+        return self.process_request(request)
+
+
+
+
+class TermsAndConditionsView(View, CustomRequestUtil):
+    template_name = "frontend/terms-and-conditions.html"
+    extra_context_data = {
+        "title": "Privacy Policy",
     }
 
     def get(self, request, *args, **kwargs):

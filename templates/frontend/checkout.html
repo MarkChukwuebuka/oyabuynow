@@ -75,7 +75,11 @@
                                             <div class="col-md-6">
                                               <div class="form-floating theme-form-floating">
                                                 <select id="state" name="state" class="form-select" required>
-                                                  <option value="">Select State</option>
+                                                  {% if last_order.state %}
+                                                  <option value="{{last_order.state}}">{{last_order.state}}</option>
+                                                    {% else %}
+                                                  <option value="">Select state</option>
+                                                    {% endif %}
                                                 </select>
                                                 <label for="state">State</label>
                                               </div>
@@ -84,7 +88,11 @@
                                             <div class="col-md-6">
                                               <div class="form-floating theme-form-floating">
                                                 <select id="lga" name="lga" class="form-select" required>
+                                                  {% if last_order.lga %}
+                                                  <option value="{{last_order.lga}}">{{last_order.lga}}</option>
+                                                    {% else %}
                                                   <option value="">Select LGA</option>
+                                                    {% endif %}
                                                 </select>
                                                 <label for="lga">LGA</label>
                                               </div>

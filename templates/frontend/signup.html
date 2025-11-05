@@ -107,13 +107,22 @@
                                 <div class="col-12">
                                     <div class="forgot-box">
                                         <div class="form-check ps-0 m-0 remember-box">
-                                            <input class="checkbox_animated check-box" type="checkbox"
-                                                id="flexCheckDefault">
-                                            <label class="form-check-label" for="flexCheckDefault">I agree with
-                                                <span>Terms</span> and <span>Privacy</span></label>
+                                            <input
+                                                class="checkbox_animated check-box"
+                                                type="checkbox"
+                                                id="flexCheckDefault"
+                                                required
+                                            >
+                                            <label class="form-check-label" for="flexCheckDefault">
+                                                I agree with
+                                                <a href="{% url 'terms-and-conditions' %}" target="_blank" class="text-primary text-decoration-none">Terms</a>
+                                                and
+                                                <a href="{% url 'privacy-policy' %}" target="_blank" class="text-primary text-decoration-none">Privacy</a>.
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
+
 
                                 <div class="col-12">
                                     <button class="btn btn-animation w-100" type="submit" :disabled="!isFormValid">Sign Up</button>
@@ -121,28 +130,6 @@
                             </form>
                         </div>
 
-<!--                        <div class="other-log-in">-->
-<!--                            <h6>or</h6>-->
-<!--                        </div>-->
-
-<!--                        <div class="log-in-button">-->
-<!--                            <ul>-->
-<!--                                <li>-->
-<!--                                    <a href="https://accounts.google.com/signin/v2/identifier?flowName=GlifWebSignIn&amp;flowEntry=ServiceLogin"-->
-<!--                                        class="btn google-button w-100">-->
-<!--                                        <img src="{% static 'frontend/assets/images/inner-page/google.png' %}" class="blur-up lazyload"-->
-<!--                                            alt="">-->
-<!--                                        Sign up with Google-->
-<!--                                    </a>-->
-<!--                                </li>-->
-<!--                                <li>-->
-<!--                                    <a href="https://www.facebook.com/" class="btn google-button w-100">-->
-<!--                                        <img src="{% static 'frontend/assets/images/inner-page/facebook.png' %}" class="blur-up lazyload"-->
-<!--                                            alt=""> Sign up with Facebook-->
-<!--                                    </a>-->
-<!--                                </li>-->
-<!--                            </ul>-->
-<!--                        </div>-->
 
                         <div class="other-log-in">
                             <h6></h6>

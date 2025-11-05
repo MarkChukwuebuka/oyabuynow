@@ -118,7 +118,7 @@ else:
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': ['http://localhost:9200']
+        'hosts': 'http://user:password@localhost:9200'
     }
 }
 
