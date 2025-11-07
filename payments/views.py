@@ -13,10 +13,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from cart.services.cart_service import CartService
 from products.services.product_service import ProductService
-from services.util import CustomRequestUtil, send_email, customer_required
+from services.util import CustomRequestUtil, customer_required
 from .models import OrderItem, Order, PaymentStatus, Transaction, OrderStatusChoices
-
-from .services.order_service import OrderService, OrderItemService
+from crm.tasks import send_email_notification
+from .services.order_service import OrderService
 
 
 @login_required
@@ -74,9 +74,9 @@ def paystack_verify_payment(request, order_id):
                 }
 
                 # email customer
-                # send_email(
-                #     'emails/order-success.html', 'Order Success', order.email, email_context
-                # )
+                send_email_notification.delay(
+                    'emails/order-success.html', 'Order Success', order.email, email_context
+                )
 
                 # group and email the vendor(s)
                 order_service.group_order_items_by_vendor(order)

@@ -5,7 +5,8 @@ from django.utils import timezone
 
 from accounts.models import OTPRequest, OTPTypes
 from accounts.services.user_service import UserService
-from services.util import CustomRequestUtil, compare_password, generate_otp, send_email
+from services.util import CustomRequestUtil, compare_password, generate_otp
+from crm.tasks import send_email_notification
 
 
 class AuthService(CustomRequestUtil):
@@ -41,7 +42,7 @@ class AuthService(CustomRequestUtil):
         if error:
             return None, error
 
-        send_email("emails/welcome.html", "Welcome to Oyabuynow", user.email, )
+        send_email_notification.delay("emails/welcome.html", "Welcome to Oyabuynow", user.email, )
 
         message = "Your signup was successful"
 
@@ -139,7 +140,7 @@ class AuthService(CustomRequestUtil):
 
         otp_request = OTPRequest.objects.create(
             user=user, otp_type=otp_type,
-            otp=hashed_otp, expires_at=timezone.now() + timedelta(minutes=30)
+            otp=hashed_otp, expires_at=timezone.now() + timedelta(minutes=15)
         )
 
         OTPRequest.objects.filter(user=user, is_used=False).exclude(pk=otp_request.pk).update(
@@ -160,7 +161,7 @@ class AuthService(CustomRequestUtil):
             email_template = 'forgot-password.html'
             subject = 'Forgot Password'
 
-        # send_email(f'emails/{email_template}', subject, user.email, email_context)
+        send_email_notification.delay(f'emails/{email_template}', subject, user.email, email_context)
 
         return otp
 

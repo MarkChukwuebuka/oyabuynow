@@ -1,39 +1,31 @@
-# Use the latest official Python image as a base image
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Set the working directory in the container
+# Set work directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
     gcc \
-    netcat-openbsd \
-    && apt-get clean \
+    postgresql-client \
+    gettext \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies with performance improvements
+# Install Python dependencies
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy the project files to the working directory
+# Copy project
 COPY . /app/
 
-# Copy the wait script and make it executable
-COPY wait-for-postgres.sh /wait-for-postgres.sh
-RUN chmod +x /wait-for-postgres.sh
+# Create staticfiles directory
+RUN mkdir -p /app/staticfiles
 
-# Collect static files
-RUN python manage.py collectstatic --no-input
 
-# Expose the port your Django app runs on
 EXPOSE 8000
 
-# Use ENTRYPOINT and CMD separately for better containerization practices
-ENTRYPOINT ["/bin/sh"]
-CMD ["/wait-for-postgres.sh"]
+# Default command (can be overridden in docker-compose)
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]

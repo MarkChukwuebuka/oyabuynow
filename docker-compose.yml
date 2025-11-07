@@ -1,18 +1,94 @@
+version: '3.8'
+
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
-    volumes:
-      - esdata01:/usr/share/elasticsearch/data
+  redis:
+    image: redis:7-alpine
     ports:
-      - 9200:9200
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     environment:
       - discovery.type=single-node
-      - bootstrap.memory_lock=true
       - xpack.security.enabled=false
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py makemigrations --noinput &&
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             python manage.py search_index --rebuild -f &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 core.wsgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - ELASTICSEARCH_DSL_HOST=${ELASTICSEARCH_DSL_HOST}
+    depends_on:
+      #   condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  celery_worker:
+    build: .
+    command: celery -A core worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - ELASTICSEARCH_DSL_HOST=${ELASTICSEARCH_DSL_HOST}
+    depends_on:
+      - redis
+      - elasticsearch
+      - web
+
+  celery_beat:
+    build: .
+    command: celery -A core beat -l info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - ELASTICSEARCH_DSL_HOST=${ELASTICSEARCH_DSL_HOST}
+    depends_on:
+      - redis
+      - elasticsearch
+      - web
+
 volumes:
-  esdata01:
-    driver: local
+  elasticsearch_data:
+  static_volume:

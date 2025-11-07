@@ -177,16 +177,6 @@ def compare_password(input_password, hashed_password):
     return check_password(input_password, hashed_password)
 
 
-def send_email(html_template, subject, email, context):
-    html_message = render_to_string(html_template, context=context)
-    email_from = settings.EMAIL_HOST_USER
-    recipient_list = [email]
-    message = EmailMessage(subject, html_message, email_from, recipient_list)
-    message.content_subtype = 'html'
-    message.send()
-
-    return None
-
 
 def generate_otp():
     if settings.DEBUG:

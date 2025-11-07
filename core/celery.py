@@ -1,13 +1,17 @@
+import os
+from celery import Celery
+from celery.schedules import crontab
 
-from django.contrib import admin
-from django.urls import path, include
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('accounts.urls')),
-    path('', include('products.urls')),
-    path('', include('crm.urls')),
-    path('', include('cart.urls')),
-    path('', include('payments.urls')),
-    path('api/', include('api.urls')),
-]
+app = Celery('core')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+
+# app.conf.beat_schedule = {
+#     'notify-due-loans-daily': {
+#         'task': 'library.tasks.notify_due_loans',
+#         'schedule': crontab(hour=1, minute=20),  # every day at 08:00
+#     },
+# }

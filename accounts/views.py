@@ -122,7 +122,7 @@ class VerifyOtpView(View, CustomRequestUtil):
     def get(self, request, *args, **kwargs):
         self.extra_context_data["email"] = request.session.get("email")
         self.extra_context_data["otp_type"] = request.session.get("otp_type")
-        print(f'---------------{request.session.get("otp_type")}')
+        
         return self.process_request(request)
 
     def post(self, request, *args, **kwargs):
