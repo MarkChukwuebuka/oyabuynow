@@ -39,7 +39,7 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
-    restart: always
+
     ports:
       - "8000:8000"
     networks:
