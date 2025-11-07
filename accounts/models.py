@@ -114,8 +114,7 @@ class OTPRequest(BaseModel):
         User, on_delete=models.CASCADE, null=False,
         related_name="otp_requests"
     )
-    # TODO 
-    otp = models.CharField(max_length=255, default=gen)
+    otp = models.CharField(max_length=255, default="123456")
     otp_type = models.CharField(max_length=25, choices=OTPTypes.choices, default=OTPTypes.signup)
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField(null=True)
