@@ -46,7 +46,7 @@ services:
       - dokploy-network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.web.rule=Host(`www.oyabuynow.com`)
+      - traefik.http.routers.web.rule=Host(`www.oyabuynow.com`, `oyabuynow.com`)
       - traefik.http.routers.web.entrypoints=websecure
       - traefik.http.routers.web.tls.certResolver=letsencrypt
       - traefik.http.services.web.loadbalancer.server.port=8000
