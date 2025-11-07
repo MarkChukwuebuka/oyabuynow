@@ -31,11 +31,17 @@ services:
   web:
     build: .
     command: >
-      sh -c "python manage.py makemigrations --noinput &&
-             python manage.py migrate --noinput &&
-             python manage.py collectstatic --noinput &&
-             python manage.py search_index --rebuild -f &&
-             gunicorn --bind 0.0.0.0:8000 --workers 3 core.wsgi:application"
+      sh -c "
+        echo 'Waiting for Elasticsearch...' &&
+        until curl -s http://elasticsearch:9200/_cluster/health | grep -q 'status'; do
+          sleep 5;
+        done &&
+        python manage.py makemigrations --noinput &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        python manage.py search_index --rebuild -f &&
+        gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
