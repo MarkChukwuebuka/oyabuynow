@@ -118,7 +118,7 @@ else:
 
 ELASTICSEARCH_DSL = {
     'default': {
-        'hosts': 'http://user:password@localhost:9200'
+        'hosts': os.getenv('ELASTICSEARCH_DSL_HOST')
     }
 }
 
