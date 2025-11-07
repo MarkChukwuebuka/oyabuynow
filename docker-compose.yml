@@ -39,8 +39,17 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
+    restart: always
     ports:
       - "8000:8000"
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web.rule=Host(`www.oyabuynow.com`)
+      - traefik.http.routers.web.entrypoints=websecure
+      - traefik.http.routers.web.tls.certResolver=letsencrypt
+      - traefik.http.services.web.loadbalancer.server.port=8000
     environment:
       - DEBUG=${DEBUG:-False}
       - SECRET_KEY=${SECRET_KEY}
@@ -92,3 +101,7 @@ services:
 volumes:
   elasticsearch_data:
   static_volume:
+
+networks:
+  dokploy-network:
+    external: true
