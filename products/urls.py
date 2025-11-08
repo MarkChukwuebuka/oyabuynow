@@ -2,7 +2,7 @@ from django.urls import path
 
 from products.views import RetrieveProductView, AddOrRemoveFromWishlistView, \
     WishlistView, ListProductView, CreateProductView, CreateCategoryView, UpdateDeleteProductView, delete_product, \
-    VendorProductView, ListProductByVendorView
+    VendorProductView, ListProductByVendorView, ProductSearchView
 
 urlpatterns = [
     path('detail/<str:product_slug>/', RetrieveProductView.as_view(), name="product-detail"),
@@ -22,5 +22,7 @@ urlpatterns = [
     path('wishlist/add-or-remove/', AddOrRemoveFromWishlistView.as_view(), name='add-remove-from-wishlist'),
 
     path('vendor/<str:product_slug>/', VendorProductView.as_view(), name="vendor-product-detail"),
+
+    path("search/", ProductSearchView.as_view(), name='search'),
 
 ]

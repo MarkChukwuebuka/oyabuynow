@@ -410,7 +410,7 @@
             </li>
 
             <li>
-                <a href="search.html" class="search-box">
+                <a href="{% url 'search' %}" class="search-box">
                     <i class="iconly-Search icli"></i>
                     <span>Search</span>
                 </a>
@@ -444,6 +444,10 @@
     {% endblock content %}
 
 
+
+    {% block newsletter %}
+        {% include '../partials/newsletter.html' %}
+    {% endblock newsletter %}
 
 
 
@@ -537,39 +541,6 @@
 
     <script src="{% static 'frontend/assets/js/search-autocomplete.js' %}"></script>
 
-<!--    <script>-->
-<!--const input = document.getElementById("search-input");-->
-<!--const suggestionsBox = document.getElementById("suggestions");-->
-<!--let debounceTimeout = null;-->
-
-<!--input.addEventListener("input", () => {-->
-<!--  clearTimeout(debounceTimeout);-->
-<!--  const query = input.value.trim();-->
-<!--  if (!query) {-->
-<!--    suggestionsBox.innerHTML = "";-->
-<!--    return;-->
-<!--  }-->
-
-<!--  debounceTimeout = setTimeout(() => {-->
-<!--    fetch(`/api/search-suggestions/?q=${encodeURIComponent(query)}`)-->
-<!--      .then(res => res.json())-->
-<!--      .then(data => {-->
-<!--        const results = data.results;-->
-<!--        let html = "";-->
-
-<!--        for (const [group, items] of Object.entries(results)) {-->
-<!--          if (items.length === 0) continue;-->
-<!--          html += `<div class="p-2 border-bottom"><strong>${group.toUpperCase()}</strong></div>`;-->
-<!--          items.forEach(item => {-->
-<!--            html += `<div class="p-2 suggestion-item" style="cursor:pointer">${item.name}</div>`;-->
-<!--          });-->
-<!--        }-->
-
-<!--        suggestionsBox.innerHTML = html || "<div class='p-2'>No results found</div>";-->
-<!--      });-->
-<!--  }, 300);-->
-<!--});-->
-<!--</script>-->
 
 
     {% include '../partials/messages.html' %}

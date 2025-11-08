@@ -7,7 +7,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 
 from payments.models import Order, OrderItem
-from services.util import CustomRequestUtil, send_email
+from services.util import CustomRequestUtil
+from crm.tasks import send_email_notification
 
 
 def generate_order_ref(prefix="ORD"):
@@ -99,8 +100,6 @@ class OrderService(CustomRequestUtil):
 
         return order, None
 
-
-    # TODO: move to celery
     def group_order_items_by_vendor(self, order):
         vendor_items = defaultdict(list)
 
@@ -133,7 +132,7 @@ class OrderService(CustomRequestUtil):
                 'order_ref': order.ref,
             }
 
-            send_email(
+            send_email_notification.delay(
                 'emails/vendor-order-success.html',
                 'Incoming Order',
                 email,

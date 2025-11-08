@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
-from django.db.models import Q, Avg
+from django.db.models import Avg
 from django.utils import timezone
 from email_validator import validate_email
+from crm.tasks import send_email_notification
 
 from accounts.models import User, VendorProfile, VendorStatus, UserTypes
-from accounts.services.user_service import UserService
-from services.util import CustomRequestUtil, compare_password, send_email
+from services.util import CustomRequestUtil, compare_password
 
 
 class VendorService(CustomRequestUtil):
@@ -105,12 +105,12 @@ class VendorService(CustomRequestUtil):
             'vendor_phone' : vp.business_phone if vp.business_phone else vp.user.phone
         }
         #notify vendor
-        send_email(
+        send_email_notification.delay(
             'emails/vendor-application-processing.html', 'Vendor Application Received',
             email, {'vendor_name': vp.business_name}
         )
         # notify admin
-        send_email(
+        send_email_notification.delay(
             'emails/vendor-application-processing.html', 'Vendor Application Received',
             settings.ADMIN_EMAIL, admin_email_context
         )

@@ -177,7 +177,7 @@ class VendorProfile(BaseModel):
                     setattr(self, field, upload["public_id"])
 
         if self.pk:
-            from services.util import send_email
+            from crm.tasks import send_email_notification
 
             email = self.business_email if self.business_email else self.user.email
             email_context = {
@@ -188,7 +188,7 @@ class VendorProfile(BaseModel):
                 self.user.user_type = UserTypes.vendor
                 self.user.save()
 
-                send_email(
+                send_email_notification.delay(
                     'emails/vendor-application-approved.html', 'Vendor Application was Approved',
                     email, email_context
                 )
@@ -200,7 +200,7 @@ class VendorProfile(BaseModel):
 
                 email_context['decline_reason'] = self.reason_for_rejection
 
-                send_email(
+                send_email_notification.delay(
                     'emails/vendor-application-rejected.html', 'Vendor Application was Declined',
                     email, email_context
                 )

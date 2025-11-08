@@ -8,7 +8,7 @@ from accounts.models import User
 from crm.models import BaseModel
 from products.models import Product
 
-from services.util import send_email
+from crm.tasks import send_email_notification
 
 
 class OrderStatusChoices(models.TextChoices):
@@ -109,16 +109,16 @@ class OrderItem(BaseModel):
             if old_order_item.status != self.status and self.status == OrderStatusChoices.shipped:
                 self.order.update_overall_status()
 
-                # send_email(
-                #     'emails/order-shipped.html', 'Order Shipped', self.order.email, email_context
-                # )
+                send_email_notification.delay(
+                    'emails/order-shipped.html', 'Order Shipped', self.order.email, email_context
+                )
 
             if old_order_item.status != self.status and self.status == OrderStatusChoices.delivered:
                 self.order.update_overall_status()
 
-                # send_email(
-                #     'emails/order-delivered.html', 'Order Delivered', self.order.email, email_context
-                # )
+                send_email_notification.delay(
+                    'emails/order-delivered.html', 'Order Delivered', self.order.email, email_context
+                )
 
         super().save(*args, **kwargs)
 

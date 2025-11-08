@@ -24,7 +24,7 @@
 
                     <div class="search-box">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="">
+                            <input type="text" class="form-control search-type" placeholder="">
                             <button class="btn theme-bg-color text-white m-0" type="button"
                                 id="button-addon1">Search</button>
                         </div>
@@ -40,101 +40,74 @@
         <div class="container-fluid-lg">
             <div class="row">
                 <div class="col-12">
+                    {% if results %}
                     <div class="search-product product-wrapper">
 
-                        {% for product in results %}
+
+                        {% for result in results %}
+                        {% with product=result.product %}
 
                         <div>
                             <div class="product-box-3 h-100">
                                 <div class="product-header">
                                     <div class="product-image">
-                                        <a href="product-left-2.html">
-                                            <img src="../assets/images/cake/product/11.png"
-                                                class="img-fluid blur-up lazyload" alt="">
+                                        <a href="{% url 'product-detail' product.slug %}">
+                                            {% if product.product_media %}
+                                                <img src="{{ product.product_media.0.image }}"
+                                                     class="img-fluid blur-up lazyload"
+                                                     alt="{{ product.name }}">
+                                            {% endif %}
                                         </a>
 
-                                        <ul class="product-option">
-                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                    data-bs-target="#view">
-                                                    <i data-feather="eye"></i>
-                                                </a>
-                                            </li>
-
-                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                                <a href="compare.html">
-                                                    <i data-feather="refresh-cw"></i>
-                                                </a>
-                                            </li>
-
-                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                                <a href="wishlist.html" class="notifi-wishlist">
-                                                    <i data-feather="heart"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
 
                                 <div class="product-footer">
                                     <div class="product-detail">
-                                        <span class="span-name">Cake</span>
-                                        <a href="product-left-thumbnail.html">
-                                            <h5 class="name">Chocolate Chip Cookies 250 g</h5>
+                                        <span class="span-name">{{product.category.name}}</span>
+                                        <a href="{% url 'product-detail' product.slug %}">
+                                            <h5 class="name">{{product.name}}</h5>
                                         </a>
-                                        <div class="product-rating mt-2">
-                                            <ul class="rating">
-                                                <li>
-                                                    <i data-feather="star" class="fill"></i>
-                                                </li>
-                                                <li>
-                                                    <i data-feather="star" class="fill"></i>
-                                                </li>
-                                                <li>
-                                                    <i data-feather="star" class="fill"></i>
-                                                </li>
-                                                <li>
-                                                    <i data-feather="star" class="fill"></i>
-                                                </li>
-                                                <li>
-                                                    <i data-feather="star" class="fill"></i>
-                                                </li>
-                                            </ul>
-                                            <span>(5.0)</span>
-                                        </div>
-                                        <h6 class="unit">500 G</h6>
-                                        <h5 class="price"><span class="theme-color">$10.25</span> <del>$12.57</del>
+
+                                        {% show_rating id=product.id %}
+
+                                        <h5 class="price">
+                                            {% if product.percentage_discount %}
+                                            <span class="theme-color">
+                                                {{ product.discounted_price | naira }}
+                                            </span>
+                                            <del>{{ product.price | naira }}</del>
+                                            {% else %}
+                                            <span class="theme-color">
+                                                {{ product.price | naira }}
+                                            </span>
+                                            {% endif %}
                                         </h5>
                                         <div class="add-to-cart-box bg-white">
-                                            <button class="btn btn-add-cart addcart-button">Add
+                                            <button class="btn btn-add-cart addcart-button"
+                                                    id="cart-btn-{{ product.id }}"
+                                                    data-url="{% url 'add_to_cart' %}"
+                                                    data-remove-url="{% url 'remove_from_cart' %}"
+                                                    data-product-id="{{ product.id }}"
+                                                    data-quantity="1"
+                                            >
+                                                Add
                                                 <span class="add-icon bg-light-gray">
                                                     <i class="fa-solid fa-plus"></i>
                                                 </span>
                                             </button>
-                                            <div class="cart_qty qty-box">
-                                                <div class="input-group bg-white">
-                                                    <button type="button" class="qty-left-minus bg-gray"
-                                                        data-type="minus" data-field="">
-                                                        <i class="fa fa-minus"></i>
-                                                    </button>
-                                                    <input class="form-control input-number qty-input" type="text"
-                                                        name="quantity" value="0">
-                                                    <button type="button" class="qty-right-plus bg-gray"
-                                                        data-type="plus" data-field="">
-                                                        <i class="fa fa-plus"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
+                        {% endwith %}
                         {% endfor %}
-
-
                     </div>
+                    {% else %}
+                        <h3>No results found</h3>
+                    {% endif %}
+
                 </div>
             </div>
         </div>
@@ -143,3 +116,7 @@
 
 
 {% endblock content %}
+
+{% block newsletter %}
+{% endblock newsletter %}
+

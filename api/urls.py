@@ -1,8 +1,7 @@
 from django.urls import path
 from accounts.views import check_email, get_banks, verify_bank_account, resend_otp
 from media.views import delete_product_image
-from products.views import get_subcategories
-
+from products.views import get_subcategories, ProductAutocompleteView
 
 urlpatterns = [
     path("check-email/", check_email, name="check_email"),
@@ -11,5 +10,7 @@ urlpatterns = [
     path("get-subcategories/<int:category_id>/", get_subcategories, name='get-subcategories'),
     path("delete-product-image/<int:upload_id>/", delete_product_image, name='delete-product-image'),
     path("resend-otp/", resend_otp, name='resend-otp'),
+    path("search/autocomplete/", ProductAutocompleteView.as_view(), name='autocomplete'),
+
 
 ]
