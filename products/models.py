@@ -99,9 +99,12 @@ class Product(BaseModel):
     colors = models.ManyToManyField(Color, blank=True, related_name="products")
     tags = models.ManyToManyField(Tag, blank=True, related_name="products")
 
+    add_to_deal_of_the_day = models.BooleanField(default=False)
+
     add_product_to_sales = models.BooleanField(default=False)
     sale_start = models.DateTimeField(null=True, blank=True)
     sale_end = models.DateTimeField(null=True, blank=True)
+
 
     weight = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     rating = models.PositiveIntegerField(null=True, blank=True)

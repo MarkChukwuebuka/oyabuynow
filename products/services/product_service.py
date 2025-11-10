@@ -88,10 +88,13 @@ class ProductService(CustomRequestUtil):
 
         return message, None
 
-    def fetch_list(self, category=None, subcategory=None, paginate=False, vendor=None):
+    def fetch_list(self, category=None, subcategory=None, paginate=False, vendor=None, is_deal=False):
         q = Q()
         if category:
             q &= Q(category__name__iexact=category)
+
+        if is_deal:
+            q &= Q(add_to_deal_of_the_day=True)
 
         if subcategory:
             q &= Q(sub_categories__name__iexact=subcategory)

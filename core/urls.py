@@ -17,3 +17,7 @@ urlpatterns = [
     path('', include('payments.urls')),
     path('api/', include('api.urls')),
 ]
+
+
+handler404 = "crm.views.page_not_found"
+handler500 = "crm.views.server_error"
