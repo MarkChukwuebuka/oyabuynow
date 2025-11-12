@@ -120,6 +120,31 @@ class ListProductView(View, CustomRequestUtil):
         )
 
 
+
+class ProductDealsView(View, CustomRequestUtil):
+    extra_context_data = {
+        "title": "Deals of the Day"
+    }
+
+    def get(self, request, *args, **kwargs):
+        self.template_name = "frontend/deals-of-the-day.html"
+        self.context_object_name = 'page_obj'
+
+        category = kwargs.get('category_name', None)
+        subcategory = kwargs.get('subcategory_name', None)
+        if category:
+            self.extra_context_data['title'] = f"{category}"
+        if subcategory:
+            self.extra_context_data['title'] = f"{subcategory}"
+        product_service = ProductService(self.request)
+
+
+        return self.process_request(
+            request, target_function=product_service.fetch_list,
+            category=category, subcategory=subcategory, paginate=True, is_deal=True
+        )
+
+
 class ListProductByVendorView(View, CustomRequestUtil):
 
     def get(self, request, *args, **kwargs):

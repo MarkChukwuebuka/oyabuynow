@@ -1,7 +1,8 @@
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views import View
-from elasticsearch_dsl import MultiSearch, Search
 
+from crm.models import Banner, BannerTypeChoices
 from products.services.product_service import ProductService
 from services.util import CustomRequestUtil
 
@@ -25,14 +26,17 @@ class HomeView(View, CustomRequestUtil):
         best_seller = product_service.fetch_list().order_by("-quantity_sold")[:10]
         trending_products = product_service.fetch_list().order_by("-views")[:5]
         products = product_service.get_random_products(12)
+        banners = Banner.objects.filter(is_active=True).order_by("?")
 
         self.extra_context_data["top_rated"] = top_rated
+        self.extra_context_data["banners"] = banners
         self.extra_context_data["new_arrivals"] = new_arrivals
         self.extra_context_data["best_seller"] = best_seller
         self.extra_context_data["trending_products"] = trending_products
         self.extra_context_data["products"] = products
 
         return self.process_request(request)
+
 
 
 class ContactView(View, CustomRequestUtil):
@@ -86,5 +90,55 @@ class TermsAndConditionsView(View, CustomRequestUtil):
 
     def get(self, request, *args, **kwargs):
         return self.process_request(request)
+
+
+
+class VendorOnboardingPolicyView(View, CustomRequestUtil):
+    template_name = "frontend/vendor-onboarding-policy.html"
+    extra_context_data = {
+        "title": "Vendor Onboarding Policy",
+    }
+
+    def get(self, request, *args, **kwargs):
+        return self.process_request(request)
+
+
+class BannerAPIView(View):
+    def get(self, request):
+        banner_type = request.GET.get('type', BannerTypeChoices.main)
+
+        print(banner_type)
+        if banner_type not in [BannerTypeChoices.main, BannerTypeChoices.side]:
+            banner_type = BannerTypeChoices.main
+
+
+        print(banner_type)
+        banners = Banner.objects.filter(
+            is_active=True,
+            banner_type=banner_type
+        ).order_by('order')
+
+        data = [{
+            'id': banner.id,
+            'title': banner.title,
+            'subtitle': banner.subtitle,
+            'description': banner.description,
+            'image': banner.image.url if banner.image else '',
+            'discount_title': banner.discount_title,
+            'discount_text': banner.discount_text,
+            'banner_type': banner.banner_type,
+            'order': banner.order
+        } for banner in banners]
+
+        return JsonResponse(data, safe=False)
+
+
+
+
+def page_not_found(request, exception):
+    return render(request, 'frontend/404.html', {'title':'Page Not Found'}, status=404)
+
+def server_error(request):
+    return render(request, 'frontend/500.html', {'title':'Server Error'}, status=404)
 
 

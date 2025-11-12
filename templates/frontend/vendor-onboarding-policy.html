@@ -1,0 +1,110 @@
+{% extends "./partials/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Vendor Onboarding Policy Section Start -->
+<section class="privacy-policy-section py-5">
+    <div class="container-fluid-lg">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <div class="policy-wrapper bg-white shadow-sm rounded-3 p-4 p-md-5">
+                    <h2 class="text-center mb-4">{{app_config.app_name}} Vendor Onboarding Policy</h2>
+                    <p class="text-center mb-5"><strong>Website:</strong>
+                        <a href="https://www.{{app_config.domain_name}}" target="_blank">www.{{app_config.domain_name}}</a>
+                    </p>
+
+                    <h4>1. Welcome to {{app_config.app_name}}</h4>
+                    <p>Thank you for your interest in becoming a vendor on <strong>{{app_config.app_name}}</strong>! This policy outlines the rules, responsibilities, and benefits of selling on our platform. By registering as a vendor, you agree to comply with this policy as well as our <a href="{% url 'terms' %}">Vendor Agreement</a>, <a href="{% url 'terms' %}">Terms & Conditions</a>, and <a href="{% url 'privacy' %}">Privacy Policy</a>.</p>
+
+                    <h4 class="mt-4">2. Vendor Registration</h4>
+                    <p>To sell on {{app_config.app_name}}, you must:</p>
+                    <ul>
+                        <li>Register for a vendor account at <a href="https://www.{{app_config.domain_name}}/vendor-signup" target="_blank">www.{{app_config.domain_name}}/vendor-signup</a></li>
+                        <li>Provide valid business information (name, phone, email, address, and bank details)</li>
+                        <li>Upload required verification documents (ID, business certificate if applicable)</li>
+                        <li>Accept our Vendor Agreement and policies</li>
+                    </ul>
+                    <p>Once approved, your vendor dashboard will be activated, allowing you to list and manage your products.</p>
+
+                    <h4 class="mt-4">3. Product Listing Guidelines</h4>
+                    <ul>
+                        <li>List only genuine and legally permitted products.</li>
+                        <li>Use high-quality, accurate images and descriptions.</li>
+                        <li>Keep stock availability and pricing up to date.</li>
+                        <li>Do not list counterfeit, expired, or restricted items.</li>
+                        <li>False or misleading listings may result in suspension.</li>
+                    </ul>
+
+                    <h4 class="mt-4">4. Commissions and Fees</h4>
+                    <p>{{app_config.app_name}} charges a small commission on each successful sale. Commission rates vary by product category (typically between <strong>5%</strong> and <strong>15%</strong>).</p>
+                    <ul>
+                        <li>Fees are automatically deducted before payment is released.</li>
+                        <li>No registration or hidden fees — you earn as you sell!</li>
+                    </ul>
+
+                    <h4 class="mt-4">5. Payments and Settlements</h4>
+                    <p>Payments are made directly to your registered bank account within <strong>3–5 business days</strong> after successful delivery confirmation.</p>
+                    <p>All sales, commissions, and payouts are visible in your vendor dashboard for easy tracking.</p>
+
+                    <h4 class="mt-4">6. Delivery and Order Fulfilment</h4>
+                    <ul>
+                        <li>Vendors can use <strong>{{app_config.app_name}} Logistics Partners</strong> or manage deliveries independently.</li>
+                        <li>Orders must be shipped within <strong>24–48 hours</strong> of confirmation.</li>
+                        <li>Late dispatch, wrong items, or poor packaging may reduce your vendor rating.</li>
+                        <li>Using {{app_config.app_name}} Logistics gives you discounted rates and delivery tracking.</li>
+                    </ul>
+
+                    <h4 class="mt-4">7. Returns and Refunds</h4>
+                    <p>Products are covered by {{app_config.app_name}}’s <strong>7–14 day return policy</strong> depending on category.</p>
+                    <ul>
+                        <li>Returned items must be accepted if they meet return conditions (unused, original packaging, etc.).</li>
+                        <li>Refunds are processed through {{app_config.app_name}} after vendor confirmation.</li>
+                        <li>Frequent return issues may trigger account review.</li>
+                    </ul>
+
+                    <h4 class="mt-4">8. Vendor Support</h4>
+                    <p>Our Vendor Support Team is available to help you grow your business on {{app_config.app_name}}.</p>
+                    <p>We provide assistance with:</p>
+                    <ul>
+                        <li>Account setup and verification</li>
+                        <li>Product uploads and catalog optimization</li>
+                        <li>Payment and settlement inquiries</li>
+                        <li>Order management and logistics coordination</li>
+                    </ul>
+                    <p>📧 Email: <a href="mailto:vendors@{{app_config.domain_name}}">vendors@{{app_config.domain_name}}</a></p>
+
+                    <h4 class="mt-4">9. Vendor Conduct</h4>
+                    <p>All vendors are expected to maintain professional and ethical standards:</p>
+                    <ul>
+                        <li>Be honest and transparent in all transactions.</li>
+                        <li>Communicate courteously with customers and support staff.</li>
+                        <li>Protect customer data and never use it for personal marketing.</li>
+                        <li>Deliver quality products and reliable service.</li>
+                    </ul>
+                    <p>Violations may result in warnings, suspension, or permanent removal from the platform.</p>
+
+                    <h4 class="mt-4">10. Benefits of Selling on {{app_config.app_name}}</h4>
+                    <ul>
+                        <li>✅ Free vendor registration</li>
+                        <li>✅ Access to a nationwide customer base</li>
+                        <li>✅ Reliable logistics and secure payment system</li>
+                        <li>✅ Transparent commissions and quick payouts</li>
+                        <li>✅ Dedicated support team</li>
+                        <li>✅ Marketing and promotional campaigns to grow sales</li>
+                    </ul>
+
+                    <h4 class="mt-4">11. Acceptance</h4>
+                    <p>By completing your vendor registration and listing products, you acknowledge that you have read, understood, and agreed to comply with this Vendor Onboarding Policy and all related
+                        {{app_config.app_name}} agreements and policies.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Vendor Onboarding Policy Section End -->
+
+{% endblock content %}
+
+{% block newsletter %}
+{% endblock newsletter %}
