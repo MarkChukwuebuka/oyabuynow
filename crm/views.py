@@ -92,6 +92,17 @@ class TermsAndConditionsView(View, CustomRequestUtil):
         return self.process_request(request)
 
 
+
+class VendorOnboardingPolicyView(View, CustomRequestUtil):
+    template_name = "frontend/vendor-onboarding-policy.html"
+    extra_context_data = {
+        "title": "Vendor Onboarding Policy",
+    }
+
+    def get(self, request, *args, **kwargs):
+        return self.process_request(request)
+
+
 class BannerAPIView(View):
     def get(self, request):
         banner_type = request.GET.get('type', BannerTypeChoices.main)

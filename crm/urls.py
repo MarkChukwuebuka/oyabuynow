@@ -1,7 +1,7 @@
 from django.urls import path
 
 from crm.views import HomeView, ContactView, AboutView, PrivacyPolicyView, ReturnsAndRefundView, \
-    TermsAndConditionsView
+    TermsAndConditionsView, VendorOnboardingPolicyView
 
 urlpatterns = [
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('terms-and-conditions/', TermsAndConditionsView.as_view(), name="terms-and-conditions"),
     path('privacy-policy/', PrivacyPolicyView.as_view(), name="privacy-policy"),
     path('returns-and-refund/', ReturnsAndRefundView.as_view(), name="returns-and-refund"),
+    path('vendor-onboarding-policy/', VendorOnboardingPolicyView.as_view(), name="vendor-onboarding-policy"),
 ]
