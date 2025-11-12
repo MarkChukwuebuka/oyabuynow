@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
@@ -42,7 +43,7 @@ class AuthService(CustomRequestUtil):
         if error:
             return None, error
 
-        send_email_notification.delay("emails/welcome.html", "Welcome to Oyabuynow", user.email, )
+        send_email_notification.delay("emails/welcome.html", f"Welcome to {os.getenv('APP_NAME')}", user.email, )
 
         message = "Your signup was successful"
 
@@ -153,7 +154,7 @@ class AuthService(CustomRequestUtil):
 
         if otp_type == OTPTypes.signup:
             email_template = 'welcome.html'
-            subject = 'Welcome to Oyabuynow'
+            subject = f"Welcome to {os.getenv('APP_NAME')}"
         elif otp_type == OTPTypes.login:
             email_template = None
             subject = None

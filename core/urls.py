@@ -1,11 +1,13 @@
 
 from django.contrib import admin
 from django.urls import path, include
+import os
 
+app_name = os.getenv('APP_NAME')
 
-admin.site.site_header = "OyaBuyNow Administration"
-admin.site.site_title = "OyaBuyNow Admin Portal"
-admin.site.index_title = "Welcome to OyaBuyNow Admin Dashboard"
+admin.site.site_header = f"{app_name} Administration"
+admin.site.site_title = f"{app_name} Admin Portal"
+admin.site.index_title = f"Welcome to {app_name} Admin Dashboard"
 
 
 urlpatterns = [

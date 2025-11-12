@@ -111,7 +111,7 @@
                                                         </li>
                                                         {% if item.product.created_by %}
                                                         <li class="text-content">
-                                                            Sold By: {{item.product.created_by.vendor_profile.store_name|default:"Oyabuynow"}}
+                                                            Sold By: {{ item.product.created_by.vendor_profile.store_name|default:app_config.app_name }}
                                                         </li>
                                                         {% endif %}
 

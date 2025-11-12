@@ -9,13 +9,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Oyabuynow admin is super flexible, powerful, clean &amp; modern responsive bootstrap 5 admin template with unlimited possibilities.">
+        content="{{app_config.app_name}} is an online market place where vendors can sell their wares with little to no stress">
     <meta name="keywords"
-        content="Oyabuynow dashboard template, dashboard template, flat admin template, responsive admin template, web app">
+        content="{{app_config.app_name}} s an online market place where vendors can sell their wares with little to no stress">
     <meta name="author" content="pixelstrap">
     <link rel="icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
     <link rel="shortcut icon" href="{% static 'frontend/assets/images/favicon/favicon.ico' %}" type="image/x-icon">
-    <title>{{title}} | OyaBuyNow</title>
+    <title>{{title}} | {{app_config.app_name}}</title>
 
     <!-- Google font-->
     <link
@@ -109,7 +109,7 @@
                         <div class="Typeahead Typeahead--twitterUsers">
                             <div class="u-posRelative">
                                 <input class="demo-input Typeahead-input form-control-plaintext w-100" type="text"
-                                    placeholder="Search Oyabuynow .." name="q" title="" autofocus>
+                                    placeholder="Search {{app_config.app_name}} .." name="q" title="" autofocus>
                                 <i class="close-search" data-feather="x"></i>
                                 <div class="spinner-border Typeahead-spinner" role="status">
                                     <span class="sr-only">Loading...</span>
@@ -280,7 +280,7 @@
                     <footer class="footer">
                         <div class="row">
                             <div class="col-md-12 footer-copyright text-center">
-                                <p class="mb-0">Copyright 2025 © OyaBuyNow </p>
+                                <p class="mb-0">Copyright 2025 © {{app_config.app_name}} </p>
                             </div>
                         </div>
                     </footer>

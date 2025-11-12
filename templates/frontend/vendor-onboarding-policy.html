@@ -9,18 +9,18 @@
         <div class="row justify-content-center">
             <div class="col-lg-10 col-md-12">
                 <div class="policy-wrapper bg-white shadow-sm rounded-3 p-4 p-md-5">
-                    <h2 class="text-center mb-4">OyaBuyNow Vendor Onboarding Policy</h2>
+                    <h2 class="text-center mb-4">{{app_config.app_name}} Vendor Onboarding Policy</h2>
                     <p class="text-center mb-5"><strong>Website:</strong>
-                        <a href="https://www.oyabuynow.com" target="_blank">www.oyabuynow.com</a>
+                        <a href="https://www.{{app_config.domain_name}}" target="_blank">www.{{app_config.domain_name}}</a>
                     </p>
 
-                    <h4>1. Welcome to OyaBuyNow</h4>
-                    <p>Thank you for your interest in becoming a vendor on <strong>OyaBuyNow</strong>! This policy outlines the rules, responsibilities, and benefits of selling on our platform. By registering as a vendor, you agree to comply with this policy as well as our <a href="{% url 'terms' %}">Vendor Agreement</a>, <a href="{% url 'terms' %}">Terms & Conditions</a>, and <a href="{% url 'privacy' %}">Privacy Policy</a>.</p>
+                    <h4>1. Welcome to {{app_config.app_name}}</h4>
+                    <p>Thank you for your interest in becoming a vendor on <strong>{{app_config.app_name}}</strong>! This policy outlines the rules, responsibilities, and benefits of selling on our platform. By registering as a vendor, you agree to comply with this policy as well as our <a href="{% url 'terms' %}">Vendor Agreement</a>, <a href="{% url 'terms' %}">Terms & Conditions</a>, and <a href="{% url 'privacy' %}">Privacy Policy</a>.</p>
 
                     <h4 class="mt-4">2. Vendor Registration</h4>
-                    <p>To sell on OyaBuyNow, you must:</p>
+                    <p>To sell on {{app_config.app_name}}, you must:</p>
                     <ul>
-                        <li>Register for a vendor account at <a href="https://www.oyabuynow.com/vendor-signup" target="_blank">www.oyabuynow.com/vendor-signup</a></li>
+                        <li>Register for a vendor account at <a href="https://www.{{app_config.domain_name}}/vendor-signup" target="_blank">www.{{app_config.domain_name}}/vendor-signup</a></li>
                         <li>Provide valid business information (name, phone, email, address, and bank details)</li>
                         <li>Upload required verification documents (ID, business certificate if applicable)</li>
                         <li>Accept our Vendor Agreement and policies</li>
@@ -37,7 +37,7 @@
                     </ul>
 
                     <h4 class="mt-4">4. Commissions and Fees</h4>
-                    <p>OyaBuyNow charges a small commission on each successful sale. Commission rates vary by product category (typically between <strong>5%</strong> and <strong>15%</strong>).</p>
+                    <p>{{app_config.app_name}} charges a small commission on each successful sale. Commission rates vary by product category (typically between <strong>5%</strong> and <strong>15%</strong>).</p>
                     <ul>
                         <li>Fees are automatically deducted before payment is released.</li>
                         <li>No registration or hidden fees — you earn as you sell!</li>
@@ -49,22 +49,22 @@
 
                     <h4 class="mt-4">6. Delivery and Order Fulfilment</h4>
                     <ul>
-                        <li>Vendors can use <strong>OyaBuyNow Logistics Partners</strong> or manage deliveries independently.</li>
+                        <li>Vendors can use <strong>{{app_config.app_name}} Logistics Partners</strong> or manage deliveries independently.</li>
                         <li>Orders must be shipped within <strong>24–48 hours</strong> of confirmation.</li>
                         <li>Late dispatch, wrong items, or poor packaging may reduce your vendor rating.</li>
-                        <li>Using OyaBuyNow Logistics gives you discounted rates and delivery tracking.</li>
+                        <li>Using {{app_config.app_name}} Logistics gives you discounted rates and delivery tracking.</li>
                     </ul>
 
                     <h4 class="mt-4">7. Returns and Refunds</h4>
-                    <p>Products are covered by OyaBuyNow’s <strong>7–14 day return policy</strong> depending on category.</p>
+                    <p>Products are covered by {{app_config.app_name}}’s <strong>7–14 day return policy</strong> depending on category.</p>
                     <ul>
                         <li>Returned items must be accepted if they meet return conditions (unused, original packaging, etc.).</li>
-                        <li>Refunds are processed through OyaBuyNow after vendor confirmation.</li>
+                        <li>Refunds are processed through {{app_config.app_name}} after vendor confirmation.</li>
                         <li>Frequent return issues may trigger account review.</li>
                     </ul>
 
                     <h4 class="mt-4">8. Vendor Support</h4>
-                    <p>Our Vendor Support Team is available to help you grow your business on OyaBuyNow.</p>
+                    <p>Our Vendor Support Team is available to help you grow your business on {{app_config.app_name}}.</p>
                     <p>We provide assistance with:</p>
                     <ul>
                         <li>Account setup and verification</li>
@@ -72,7 +72,7 @@
                         <li>Payment and settlement inquiries</li>
                         <li>Order management and logistics coordination</li>
                     </ul>
-                    <p>📧 Email: <a href="mailto:vendors@oyabuynow.com">vendors@oyabuynow.com</a></p>
+                    <p>📧 Email: <a href="mailto:vendors@{{app_config.domain_name}}">vendors@{{app_config.domain_name}}</a></p>
 
                     <h4 class="mt-4">9. Vendor Conduct</h4>
                     <p>All vendors are expected to maintain professional and ethical standards:</p>
@@ -84,7 +84,7 @@
                     </ul>
                     <p>Violations may result in warnings, suspension, or permanent removal from the platform.</p>
 
-                    <h4 class="mt-4">10. Benefits of Selling on OyaBuyNow</h4>
+                    <h4 class="mt-4">10. Benefits of Selling on {{app_config.app_name}}</h4>
                     <ul>
                         <li>✅ Free vendor registration</li>
                         <li>✅ Access to a nationwide customer base</li>
@@ -95,7 +95,8 @@
                     </ul>
 
                     <h4 class="mt-4">11. Acceptance</h4>
-                    <p>By completing your vendor registration and listing products, you acknowledge that you have read, understood, and agreed to comply with this Vendor Onboarding Policy and all related OyaBuyNow agreements and policies.</p>
+                    <p>By completing your vendor registration and listing products, you acknowledge that you have read, understood, and agreed to comply with this Vendor Onboarding Policy and all related
+                        {{app_config.app_name}} agreements and policies.</p>
                 </div>
             </div>
         </div>
